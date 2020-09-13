@@ -105,84 +105,84 @@
     <div id="pid">
         <div class="exp">
             <h2>PID Autotune</h2>
-            <h5>Aim:</h5>
-            <p>To ensure the heating of the 3D printer nozzle and bed are safe, stable and consistent.</p>
-            <h5>When required:</h5>
-            <p>Any time the hot end is changed, including adding/removing a silicone sock or altering part cooling fan/ducts. Any time the bed is changed, such as adding a glass/mirror plate, magnetic spring steel sheet and/or under bed insulation.</p>
-            <h5>Tools:</h5>
-            <p>Terminal software such as <a href="https://www.pronterface.com/" target="_blank">Pronterface</a> or <a href="https://octoprint.org/" target="_blank">Octoprint</a>.</p>
+            <h5>Objectif:</h5>
+            <p>Pour garantir que le chauffage de la buse et du lit de l'imprimante 3D soit sûr, stable et constant.</p>
+            <h5>Quand le faire ?</h5>
+            <p>Chaque fois que la tête est changée, y compris l'ajout ou le retrait d'une chaussette en silicone ou la modification d'un ventilateur ou des becs de refroidissement. Chaque fois que le lit est changé, par exemple l'ajout d'une plaque de verre/miroir, une tôle d'acier à ressort magnétique et/ou une isolation sous le lit.</p>
+            <h5>Outils:</h5>
+            <p>Accès à un terminal comme <a href="https://www.pronterface.com/" target="_blank">Pronterface</a> ou <a href="https://octoprint.org/" target="_blank">Octoprint</a>.</p>
         </div>
-        <p>PID autotuning is quick and easy, and relates to the most potentially dangerous components of your 3D printer: the heaters. It makes sense to do it as a first step. This procedure is covered in this video: <a href="https://youtu.be/qCtL0Yd_w0I" target="_blank">Two easy fixes for 3D printer temperature swings</a></p>
+        <p>L'autocalibrage PID est rapide et facile, et concerne les composants les plus potentiellement dangereux de votre imprimante 3D : les chauffages. Il est logique de le faire dans un premier temps. Cette procédure est décrite dans cette vidéo : <a href="https://youtu.be/qCtL0Yd_w0I" target="_blank">Deux solutions simples pour régler les variations de température de l'imprimante 3D</a></p>
         <iframe width="480" height="360" src="https://www.youtube.com/embed/qCtL0Yd_w0I" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <p>In Marlin, this is a very straightforward process using <a href="https://marlinfw.org/docs/gcode/M303.html" target="_blank">M303</a>.</p>
-        <p>It is not essential, but you may prefer to start this process with the hot end at room temperature. In a terminal, enter the following to tune the hot end:</p>
+        <p>Dans le cas de Marlin, il s'agit d'un processus très simple utilisant <a href="https://marlinfw.org/docs/gcode/M303.html" target="_blank">M303</a>.</p>
+        <p>Ce n'est pas indispensable, mais vous préférerez peut-être commencer ce processus par la tête à température ambiante. Dans un terminal, entrez ce qui suit pour régler la tête :</p>
         <pre>M303 E0 S200 U1</pre>
-        <p>This will tune the hot end at 200 degrees. The <b>S</b> value can be altered to suit your most common printing temperature. The <b>U1</b> means the result is stored to RAM and we can save it immediately to EEPROM by sending:</p>
+        <p>Cela permettra de régler la tête à 200 degrés. La valeur <b>S</b> peut être modifiée pour s'adapter à votre température d'impression la plus courante. La valeur <b>U1</b> signifie que le résultat est stocké en RAM et que nous pouvons l'enregistrer immédiatement en EEPROM par envoi :</p>
         <pre>M500</pre>
-        <p>For the bed, <b>PIDTEMPBED</b> must be enabled in the firmware, then the command is quite similar:</p>
+        <p>Pour le lit, <b>PIDTEMPBED</b> doit être activé dans le firmware, alors la commande est assez similaire :</p>
         <pre>M303 E-1 S60 U1</pre>
-        <p>The bed is selected with <ib>E-1</b>, and the temp set to 60 degrees. Substitute as necessary for your normal printing bed temperature. Once again save to EEPROM afterwards with:</p>
+        <p>Le lit est sélectionné avec <ib>E-1</b>, et la température est réglée à 60 degrés. Remplacez si nécessaire la température normale de votre lit d'impression. Sauvegardez ensuite à nouveau dans l'EEPROM avec :</p>
         <pre>M500</pre>
-        <p>It may be preferable to have the printer as close to printing conditions as possible during these tuning procedures. That means having filament loaded and the part cooling fan on for PLA temperatures. If there is no UI button available to turn on the part cooling fan, you can do it manually via gcode with <b>M106 S255</b>.</p>
+        <p>Il est préférable que l'imprimante soit aussi proche que possible des conditions d'impression pendant ces procédures de réglage. Cela signifie qu'il faut charger les filaments et mettre en marche le ventilateur de refroidissement de la pièce pour les températures du PLA. S'il n'y a pas de bouton d'interface utilisateur disponible pour activer le ventilateur de refroidissement des pièces, vous pouvez le faire manuellement via gcode avec <b>M106 S255</b>.</p>
     </div>
 
     <div id="firstlayer">
         <div class="exp">
-            <h2>First Layer</h2>
-            <h5>Aim:</h5>
-            <p>To ensure the printer bed is both level and an appropriate distance from the nozzle. In the case of using ABL, to check if compensation is working and the Z offset is correctly set. This will result in a first layer with the correct amount of 'squish', meaning good adhesion, and greatly increasing the chances of the print being successful.</p>
-            <h5>When required:</h5>
-            <p>Initial setup of the printer, regular maintainence, if first layer quality diminishes, any time the frame or mechanical components have been disassembled or replaced, any change of bed surface or nozzle, a change in filament that has significantly difference bed/hot end temperatures. There is a lot that can throw the bed level off, but careful use of your printer without any hardware changes should see it remain consistent for an extended period of time.</p>
-            <h5>Tools:</h5>
-            <p>The gcode generator on this page. A standard sheet of office paper.</p>
+            <h2>Première couche</h2>
+            <h5>Objectif:</h5>
+            <p>Pour s'assurer que le lit de l'imprimante est à la fois de niveau et à une distance appropriée de la buse. Dans le cas de l'utilisation de l'ABL, pour vérifier si la compensation fonctionne et si le décalage Z est correctement réglé. Cela permettra d'obtenir une première couche avec la bonne quantité de filament déposé, c'est-à-dire une bonne adhérence, et d'augmenter considérablement les chances de réussite de l'impression.</p>
+            <h5>Quand le faire ?</h5>
+            <p>Installation initiale de l'imprimante, entretien régulier, si la qualité de la première couche diminue, chaque fois que le cadre ou les composants mécaniques ont été démontés ou remplacés, tout changement de la surface du lit ou de la buse, un changement de filament qui présente une différence significative de température entre le lit et la buse. Il y a beaucoup de choses qui peuvent altérer le niveau du lit, mais une utilisation précautioneuse de votre imprimante sans modification du matériel devrait permettre de maintenir le niveau pendant une longue période.</p>
+            <h5>Outils:</h5>
+            <p>Le générateur de gcodes sur cette page. Une feuille de papier de bureau standard.</p>
         </div>
-        <h2>General Principles</h2>
-        <p>Getting a good first layer is an essential part of 3D printing successfully and is probably the number one cause of failed prints for new users.</p>
-        <p>Firstly, the bed needs to be parallel to the plane the nozzle traverses when moving in X and Y. This is achieved by moving the corners of the bed up and down relative to each other. With manual bed levelling this is achieved by turning the levelling knobs in each corner.</p>
-        <p>Secondly, the vertical distance between the bed and the nozzle needs to be correct for the first layer to print correctly. In a manual system, this is achieved by turning the levelling knobs in unison to lift or lower each corner the same amount.</p>
-        <p>If this distance is too far, the filament will not be squished into the bed enough, potentially even printing in mid air, and the print will detach from the bed and fail.</p>
-        <p>If the nozzle is too close, there will not be enough room for the extruded filament to take the correct shape, and it will be forced to squeeze outwards. In minor cases, the extruded line will be wider than necessary and produce <i>elephant's foot</i>. Prints like this may be quite hard to remove from the bed.</p>
-        <p>In extreme cases, there will be no way for the filament to exit the nozzle, at best causing extruder stepper motor skipping, and even potentially even jamming the extruder/hot end.</p>
-        <p>The contents of this page are shown in detail in the following video:</p>
+        <h2>Principes généraux</h2>
+        <p>Obtenir une bonne première couche est un élément essentiel pour réussir l'impression 3D et c'est probablement la première cause d'échec des impressions pour les nouveaux utilisateurs.</p>
+        <p>Premièrement, le lit doit être parallèle au plan que la buse traverse lorsqu'elle se déplace en X et Y. Pour ce faire, il faut déplacer les coins du lit de haut en bas les uns par rapport aux autres. Pour la mise à niveau manuelle du lit, il suffit de tourner les boutons de mise à niveau dans chaque coin.</p>
+        <p>Deuxièmement, la distance verticale entre le lit et la buse doit être correcte pour que la première couche s'imprime correctement. Dans un système manuel, cela est obtenu en tournant les boutons de mise à niveau à l'unisson pour lever ou abaisser chaque coin de la même manière.</p>
+        <p>Si cette distance est trop grande, le filament ne sera pas suffisamment écrasé sur le lit, potentiellement avec une impression en l'air, et l'impression se détachera du lit et échouera.</p>
+        <p>Si la buse est trop proche, il n'y aura pas assez de place pour que le filament extrudé prenne la bonne forme, et il sera forcé de s'épancher vers l'extérieur. Dans des cas mineurs, la ligne extrudée sera plus large que nécessaire et produira un <i>pied d'éléphant. De telles empreintes peuvent être assez difficiles à enlever du lit.</p>
+        <p>Dans les cas extrêmes, le filament ne pourra pas sortir de la buse, ce qui provoquera au mieux le saut du moteur pas à pas de l'extrudeuse, et potentiellement le blocage de la tête de l'extrudeuse.</p>
+        <p>Le contenu de cette page est présenté en détail dans la vidéo suivante :</p>
         <iframe width="480" height="360" src="https://www.youtube.com/embed/Ze36SX1xzOE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <h2>Manual Levelling Procedure</h2>
-        <p>There are many techniques available, but a common one is to move the nozzle to the various corners of the bed, turning the levelling knobs until a standard piece of office paper can just fit between the bed and nozzle. A 0.1mm feeler gauge can be used, but make sure it doesn't have any oil on it that will contaminate the bed surface. Typically, this procedure is done with the bed at printing temperature (essential), and the nozzle close to printing temperature - just cool enough to prevent filament oozing out (optional).</p>
-        <p>It is common to follow up with a first layer calibration print, and 'live level' the bed by continuing to adjust the knobs when the print is under way.</p>
-        <p>This process is depicted in detail in the video above, and a gcode generator is provided at the bottom of the page to generate a suitable test print.</p>
-        <h2>Auto Bed Levelling and Z offset</h2>
-        <p>Auto bed levelling automates the procedure to some extent. A sensor such as a BLtouch, EZABL, strain gauge or peizo transducer is used to probe the bed in a grid formation. At each location, it measures the vertical height, building up an array of stored values, called a <i>mesh</i>. <a href="https://www.youtube.com/watch?v=vcxM7-VK44k" target="_blank">Manual mesh bed levelling</a> can also be used to probe such a grid, but is still a manual process and hence not considered 'automatic'. Here is a visual representation of a probed mesh, shown with the <a href="https://plugins.octoprint.org/plugins/bedlevelvisualizer/" target="_blank">Bed level visualizer Octprint plugin</a>:</p>
+        <h2>Procédure de nivelage manuel</h2>
+        <p>Il existe de nombreuses techniques, mais l'une des plus courantes consiste à déplacer la buse aux différents coins du lit, en tournant les boutons de mise à niveau jusqu'à ce qu'un morceau de papier de bureau standard puisse tout juste s'insérer entre le lit et la buse. Une jauge d'épaisseur de 0,1 mm peut être utilisée, mais assurez-vous qu'elle ne contient pas d'huile qui pourrait contaminer la surface du lit. En général, cette procédure est effectuée avec le lit à la température d'impression (essentiel), et la buse proche de la température d'impression - juste assez froide pour éviter que les filaments ne suintent (facultatif).</p>
+        <p>Il est courant d'effectuer un suivi avec une impression de calibrage de la première couche et de "niveler" le lit en continuant à ajuster les boutons lorsque l'impression est en cours.</p>
+        <p>Ce processus est décrit en détail dans la vidéo ci-dessus, et un générateur de gcode est fourni au bas de la page pour générer une impression test appropriée.</p>
+        <h2>Nivelage auto du lit et Z offset</h2>
+        <p>Le nivellement automatique du lit automatise dans une certaine mesure la procédure. Un capteur tel qu'un BLtouch, un TouchMi, un EZABL, une jauge de contrainte ou un transducteur piezo est utilisé pour sonder le lit dans une grille. À chaque endroit, il mesure la hauteur verticale, construisant un tableau de valeurs stockées, appelé <i>maillage</i>. <a href="https://www.youtube.com/watch?v=vcxM7-VK44k" target="_blank">Le maillage manuel du nivellement du lit </a> peut également être utilisé pour sonder une telle grille, mais il s'agit toujours d'un processus manuel et n'est donc pas considéré comme "automatique". Voici une représentation visuelle d'un maillage, illustrée par le <a href="https://plugins.octoprint.org/plugins/bedlevelvisualizer/" target="_blank">Plugin Visualisateur de niveau de lit d'Octoprint</a>:</p>
         <a href="#" data-featherlight="img/ablmesh.jpg"><img class="thumb" src="img/ablmesh.jpg" /></a>
-        <p>During printing, the firmware will reference the mesh and compensate for an angled and/or warped bed by raising and lowering the nozzle using Z axis movement. This means the nozzle can travel up and down to match the contours of the bed, ensuring a good first layer.</p>
-        <p>In the printer's bed is perfectly flat, it is reasonable to claim ABL is not needed. Some users may still prefer it for the added convenience. In the event that the bed is warped (very common), it can be impossible to get a good first layer without ABL or manual mesh bed levelling. An example of this situation is shown in the video above.</p>
-        <p>The bed can be probed at the start of the print with a <b>G29</b> command, with the resulting mesh immediately used to compensate as the initial layers are produced. Alternatively, the bed can also be probed some other time (while not printing), the mesh stored in the EEPROM and then restored with <b>M420 S1</b> at the start of a print. In this case the print will start sooner, since we do not need to wait for a new mesh to be probed, although it may not be as accurate if anything has changed since probing. Either of these gcode commands should come after the <b>G28</b> home command in the start gcode.</p>
-        <p>Although ABL can compensate for a crooked/non-levelled bed, it is still better to attempt to level manually first and get everything in the  ballpark.</p>
-        <p>Probing the bed and building a mesh only accounts for an uneven or warped bed. Like manual levelling, we still need to set the distance between the nozzle and bed to get a good first layer. This is where the Z offset comes in, which is simply the vertical distance between where the probe triggers vs the nozzle tip. Here are some examples:</p>
+        <p>Pendant l'impression, le firmware référencera le maillage et compensera un lit incliné et/ou déformé en soulevant et en abaissant la buse par un mouvement de l'axe Z. Cela signifie que la buse peut se déplacer de haut en bas pour s'adapter aux contours du lit, ce qui garantit une bonne première couche.</p>
+        <p>Quand le lit de l'imprimante est parfaitement plat, il est raisonnable de prétendre que l'ABL n'est pas nécessaire. Certains utilisateurs peuvent néanmoins le préfère pour plus de commodité. Dans le cas où le lit est déformé (très courant), il peut être impossible d'obtenir une bonne première couche sans l'ABL ou le maillage manuel du nivellement du lit. Un exemple de cette situation est montré dans la vidéo ci-dessus.</p>
+        <p>Le lit peut être sondé au début de l'impression avec une commande <b>G29</b>, le maillage résultant étant immédiatement utilisé pour compenser au fur et à mesure que les couches initiales sont produites. Il est également possible de sonder le lit à un autre moment (pendant que l'on n'imprime pas), le maillage étant stocké dans l'EEPROM puis restauré avec la commande <b>M420 S1</b> au début de l'impression. Dans ce cas, l'impression commencera plus tôt, puisque nous n'avons pas besoin d'attendre qu'un nouveau maillage soit palpé, bien qu'il puisse ne pas être aussi précis si quelque chose a changé depuis le dernier palpage. L'une ou l'autre de ces commandes gcode doit venir après la commande de mise aux origines <b>G28</b> dans le gcode de démarrage.</p>
+        <p>Bien que l'ABL puisse compenser un lit non plan, il est toujours préférable d'essayer de niveler manuellement d'abord et de tout mettre à niveau.</p>
+        <p>Le sondage du lit et la construction d'un grillage ne tiennent compte que d'un lit inégal ou déformé. Comme pour le nivellement manuel, il faut encore régler la distance entre la buse et le lit pour obtenir une bonne première couche. C'est là qu'intervient le décalage en Z, qui est simplement la distance verticale entre l'endroit où la sonde se déclenche et l'extrémité de la buse. Voici quelques exemples :</p>
         <ul>
-            <li>BLtouch/EZABL/Pinda probe - The nozzle is in mid air when these probes are triggered, which will require a negative Z offset.</li>
-            <li>Manual mesh bed levelling - The nozzle and bed will be very close when manually probing, requiring a Z offset close to zero.</li>
-            <li><a href="https://www.youtube.com/watch?v=hs6IVfNrf5k" target="_blank">CR-6 style</a> strain gauge - The nozzle touches the bed and flexes upwards to trigger the probe. This means the trigger poiunt is actually higher than the nozzle tip, and requires a positive Z offset.</li>
+            <li>BLtouch/EZABL/sonde Pinda - La buse est en l'air lorsque ces sondes sont déclenchées, ce qui nécessite un décalage Z négatif.</li>
+            <li>Maillage manuel du nivellement - La buse et le lit seront très proches lors du sondage manuel, ce qui nécessitera un décalage Z proche de zéro.</li>
+            <li><a href="https://www.youtube.com/watch?v=hs6IVfNrf5k" target="_blank">Style CR-6</a> gauge de contrainte - La buse touche le lit et se plie vers le haut pour déclencher la sonde. Cela signifie que le poiunt de déclenchement est en fait plus élevé que l'extrémité de la buse et nécessite un décalage Z positif.</li>
         </ul>
-        <p>The following picture shows Z offset for a BLtouch. You can clearly see the vertical difference between the probing point (tip of BLtouch) and the tip of the nozzle.</p>
+        <p>L'image suivante montre le décalage Z pour un BLtouch. Vous pouvez clairement voir la différence verticale entre le point de palpage (pointeau du BLtouch) et la pointe de la buse.</p>
         <a href="#" data-featherlight="img/zoffset.jpg"><img class="thumb" src="img/zoffset.jpg" /></a>
-        <p>If <b>BABYSTEP_ZPROBE_OFFSET</b> is enabled in Marlin, setting the Z offset can easily be done as the first layer goes down. Don't forget to save to EEPROM afterwards. This process is also depicted in the video at the top of the page.</p>
-        <p>Another advantage of some ABL systems is that once the Z offset is set, you can interchange build surfaces of various thicknesses, with no changes needed for a successful first layer. Assuming the probe is triggered the same way on the bed surface, the Z offset is applied to this trigger point and the first layer height should be the same. On a manually levelled bed, the four corner knobs would need to be turned in unison to raise or lower the bed in accounting for thickness of the new build surface.</p>
-        <h2>First layer gcode generator</h2>
-        <p>The following form will create a series of five squares that you can use to live level your bed or set the Z offset. It is quick to print and features one square in the middle of the bed, with four others in the corners. You can use these to turn the levelling knobs in each corner until they are consistent, or ensure your ABL system is working if you have one in place.</p>
-        <p>This test uses a <b>0.2mm</b> first layer height.</p>
+        <p>Si <b>BABYSTEP_ZPROBE_OFFSET</b> est activé dans Marlin, le réglage du décalage Z peut facilement être effectué lorsque la première couche descend. N'oubliez pas de sauvegarder en EEPROM par la suite. Ce processus est également illustré dans la vidéo en haut de la page.</p>
+        <p>Un autre avantage de certains systèmes ABL est qu'une fois le décalage Z réglé, vous pouvez échanger des surfaces de construction d'épaisseurs différentes, sans qu'il soit nécessaire de modifier la première couche. En supposant que la sonde est déclenchée de la même manière sur la surface du lit, le décalage Z est appliqué à ce point de déclenchement et la hauteur de la première couche devrait être la même. Sur un lit nivelé manuellement, les quatre boutons d'angle devraient être tournés à l'unisson pour lever ou abaisser le lit en tenant compte de l'épaisseur de la surface de la nouvelle d'impression.</p>
+        <h2>Générateur de G-code de première couche</h2>
+        <p>Le formulaire suivant permet de créer une série de cinq carrés à utiliser pour réaliser le niveau en cours d'impression ou pour régler le décalage Z de votre lit. Il est rapide à imprimer et comporte un carré au milieu du lit, et quatre autres dans les coins. Vous pouvez les utiliser pour tourner les boutons de mise à niveau dans chaque coin jusqu'à ce qu'ils soient cohérents, ou vous assurer que votre système ABL fonctionne si vous en avez un en place.</p>
+        <p>Ce test utilise une hauteur de <b>0,2mm</b> pour la première couche.</p>
         <a href="#" data-featherlight="img/firstlayerpreview.jpg"><img class="thumb" src="img/firstlayerpreview.jpg" /></a>
         <form name="firstlayerForm" id="firstlayerForm" onsubmit="return false;">
-            <h4>Additional start gcode</h4>
-            <p>If you have additional start commands, tick the box and enter the gcode. This can be used for an extruder prime sequence, overwriting the standard flow rate, setting K factor and more. Tick the box for more details.</p>
-            <label>Additional start gcode:<input name="start" type="checkbox" onchange="toggle(!this.checked, '#firstlayerStart')" value="extraStart"></label>
-            <label>Add M80 to turn PSU on:<input name="psuon" type="checkbox" value="on"></label>
+            <h4>Gcode de début additionel</h4>
+            <p>Si vous avez des commandes de démarrage supplémentaires, cochez la case et entrez le gcode. Celui-ci peut être utilisé pour une séquence d'amorçage de l'extrudeuse, pour écraser le débit standard, pour régler le facteur K et plus encore. Cochez la case pour plus de détails.</p>
+            <label>Gcode de début additionel:<input name="start" type="checkbox" onchange="toggle(!this.checked, '#firstlayerStart')" value="extraStart"></label>
+            <label>Ajout de M80 pour mettre l'alimentation en route:<input name="psuon" type="checkbox" value="on"></label>
             <div id="firstlayerStart" class="startExp">
-                <p>For the majority of users, you can skip this section. Any gcode entered here will be inserted after temperatures are set and homing is complete. Start gcode is saved by the browser, you should only have to enter it once. Example uses include:</p>
+                <p>Pour la majorité des utilisateurs, vous pouvez sauter cette section. Tout gcode saisi ici sera inséré après que les températures aient été réglées et que la recherche de l'origine soit terminée. Le gcode de démarrage est enregistré par le navigateur, vous ne devriez avoir à le saisir qu'une seule fois. Voici quelques exemples d'utilisation :</p>
                 <ul>
-                    <li>Copying gcode commands from your slicer to draw an intro/prime/purge line. By default this is left out to accommodate delta printers.</li>
-                    <li>Telling the firmware to alter the flow rate of the gcode to follow. This does not mean the exact flow rate you have set in your own slicer. For example, using <b><a href="https://marlinfw.org/docs/gcode/M221.html" target="_blank">M221</a> S120</b> would set the flow rate to 120% of what it was originally sliced as in Simpilfy3D. Use this to compensate for obvious over or under extrusion you may encounter with these tests. Additional information available at the base of the <a href="#flow">Flow Rate</a> tab.</li>
-                    <li>Setting the K factor for linear advance. For example, <b>M900 K0.11</b></li>
-                    <li>Custom ABL sequence. By default, only G28 is present. This gcode will be inserted immediately afer that so custom commands can be used here.</li>
-                    <li>Anythng else you have in your start gcode, such as setting acceleration values, E-steps, etc.</li>
+                    <li>Copier les commandes gcode de votre trancheur pour tracer une ligne d'intro/prime/purge. Par défaut, cette option n'est pas prise en compte pour les imprimantes delta.</li>
+                    <li>Indiquer au firmware de modifier le débit du gcode qui suit. Cela ne signifie pas le débit exact que vous avez réglé dans votre propre trancheur. Par exemple, en utilisant <b><a href="https://marlinfw.org/docs/gcode/M221.html" target="_blank">M221</a> S120</b>, le débit sera de 120% de celui du trancheur original, comme dans Simpilfy3D. Utilisez cette fonction pour compenser les sur ou sous-extrusions évidentes que vous pourriez rencontrer lors de ces tests. Des informations supplémentaires sont disponibles à la base de l'onglet <a href="#flow">Débit </a>.</li>
+                    <li>Réglage du facteur K pour l'avance linéaire. Par exemple, <b>M900 K0.11</b></li>
+                    <li>Séquence ABL personnalisée. Par défaut, seul le G28 est présent. Ce gcode sera inséré immédiatement après que les commandes personnalisées puissent être utilisées ici.</li>
+                    <li>Tout ce que vous avez d'autre dans votre gcode de démarrage, comme le réglage des valeurs d'accélération, les E-steps, etc.</li>
                 </ul>
                 <textarea name="startgcode"></textarea>
             </div>
@@ -191,7 +191,7 @@
                     $("#firstlayerStart").hide();
                 }
             </script>
-            <h4>Bed dimensions</h4>
+            <h4>Dimensions du lit</h4>
             <p>Inputting the correct number will attempt to move the print into the centre of the bed. If the 0,0 at centre button is checked for a delta, also enter your bed diameter. Please check the gcode to ensure it will fit on your bed.</p>
             <label>0,0 at centre of bed (Delta):<input name="centre" type="checkbox" onchange="toggle(this.checked, 'first')" value="centre"></label>
             <span id="firstlayerXY"><label>Bed X dimension (mm): <input type="number" name="bedx" value="100" min="100" max="600" step="1"></label>
