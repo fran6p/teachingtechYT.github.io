@@ -206,7 +206,7 @@
                 <option value="0">No ABL</option>
                 <option value="1">Probe new mesh at the start of print - G29 (BLtouch,EZABL,etc)</option>
                 <option value="2">Restore saved mesh - M420 S1</option>
-                <option value="3">Prusa MK3 - G28 W followed by M80</option>
+                <option value="3">Prusa MK3 - G28 W followed by G80</option>
                 <option value="4">Prusa Mini - Only heat nozzle to 170, then G29</option>
                 <option value="5">Unified Bed Leveling - Load Saved Mesh then 3 Probe Tilt </option>
             </select>
@@ -287,7 +287,7 @@
                 <option value="0">No ABL</option>
                 <option value="1">Probe new mesh at the start of print - G29 (BLtouch,EZABL,etc)</option>
                 <option value="2">Restore saved mesh - M420 S1</option>
-                <option value="3">Prusa MK3 - G28 W followed by M80</option>
+                <option value="3">Prusa MK3 - G28 W followed by G80</option>
                 <option value="4">Prusa Mini - Only heat nozzle to 170, then G29</option>
                 <option value="5">Unified Bed Leveling - Load Saved Mesh then 3 Probe Tilt </option>
             </select>
@@ -330,6 +330,7 @@
         <p>Now heat up your hot end to whatever temperature you usually print with plus 10 degrees. Once the temperature is stable, enter:</p>
         <pre>G91</pre>
         <p><a href="https://marlinfw.org/docs/gcode/G091.html" target="_blank">G91</a> puts the printer in relative movement mode. This means requesting 100mm of filament adds 100mm to the current position, instead of moving to the specific position of 100mm.</p>
+        <p>For Klipper and Rep Rap Firmware, <b>M83</b> is used to select relative extruder movement instead.</p>
         <p>Now we take a permanent marker and put a mark 120mm from the entry to the extruder:</p>
         <a href="#" data-featherlight="img/mark.jpg"><img class="thumb" src="img/mark.jpg" /></a>
         <p>Next, we enter:</p>
@@ -354,6 +355,7 @@
         </form>
 		<p>Although starting a new print or power cycling will achieve this, it may be safer to put the printer back into absolute position mode after completing this calibration by sending:</p>
         <pre>G90</pre>
+        <p>For Klipper and Rep Rap Firmware, <b>M82</b> is used to select absolute extruder movement instead.</p>
         <h2>Storing the updated E-steps</h2>
         <p>Once you have determined the correct value, it must be saved to the firmware to take effect on subsequent prints. Although it can be hard coded into the firmware by recompiling Marlin, it is far easier to use gcode to achieve this.</p>
         <p>In a terminal, enter:</p>
@@ -732,7 +734,7 @@
                 <option value="0">No ABL</option>
                 <option value="1">Probe new mesh at the start of print - G29 (BLtouch,EZABL,etc)</option>
                 <option value="2">Restore saved mesh - M420 S1</option>
-                <option value="3">Prusa MK3 - G28 W followed by M80</option>
+                <option value="3">Prusa MK3 - G28 W followed by G80</option>
                 <option value="4">Prusa Mini - Only heat nozzle to 170, then G29</option>
                 <option value="5">Unified Bed Leveling - Load Saved Mesh then 3 Probe Tilt </option>
             </select>
@@ -885,7 +887,7 @@
                 <option value="0">No ABL</option>
                 <option value="1">Probe new mesh at the start of print - G29 (BLtouch,EZABL,etc)</option>
                 <option value="2">Restore saved mesh - M420 S1</option>
-                <option value="3">Prusa MK3 - G28 W followed by M80</option>
+                <option value="3">Prusa MK3 - G28 W followed by G80</option>
                 <option value="4">Prusa Mini - Only heat nozzle to 170, then G29</option>
                 <option value="5">Unified Bed Leveling - Load Saved Mesh then 3 Probe Tilt </option>
             </select>
@@ -989,7 +991,7 @@
             <li>Enter your reliable feedrate and filament diameter below:</li>
             <label>Reliable feedrate: <input type="number" min="60" max="1000" name="maxFeed" value="180" step="10" onchange="maxExt(); maxFee();"></label>
             <label>Filament diameter: <input type="number" min="1.5" max="4" name="filDia" value="1.75" step="0.05" onchange="maxExt(); maxFee();"></label>
-            <p class="result">Your maximum reliable extrusion speed is <b><span id="maxExt">7.22</span> mm/3</b> per second.</p>
+            <p class="result">Your maximum reliable extrusion rate is <b><span id="maxExt">7.22</span> mm³</b> per second.</p>
             <li>Enter the following settings from your slicer:</li>
             <table>
                 <thead>
@@ -1080,7 +1082,7 @@
                 <option value="0">No ABL</option>
                 <option value="1">Probe new mesh at the start of print - G29 (BLtouch,EZABL,etc)</option>
                 <option value="2">Restore saved mesh - M420 S1</option>
-                <option value="3">Prusa MK3 - G28 W followed by M80</option>
+                <option value="3">Prusa MK3 - G28 W followed by G80</option>
                 <option value="4">Prusa Mini - Only heat nozzle to 170, then G29</option>
                 <option value="5">Unified Bed Leveling - Load Saved Mesh then 3 Probe Tilt </option>
             </select>
