@@ -70,6 +70,15 @@ h5 {
     font-size: 1.4em;
 }
 
+h6 {
+    font-size: 1.4em;
+    font-weight: bolder;
+    margin: 20px 20px 5px;
+    padding: 5px 10px;
+    background-color: black;
+    color: white;
+}
+
 p {
     margin: 10px 20px 20px;
     line-height: 1.5em;
@@ -219,6 +228,12 @@ iframe {
     display:none;
 }
 
+.zoom {
+    float: right;
+    position: relative;
+    bottom: 60px;
+}
+
 .thumb {
     max-height: 240px;
     max-width: 600px;
@@ -234,6 +249,26 @@ iframe {
 #header {
     height: 4.0em;
     margin-bottom:20px;
+}
+
+.sug {
+    color: green;
+    font-weight: bolder;
+    margin: 10px 0 0;
+}
+
+#up {
+    cursor: pointer;
+    position: fixed;
+    right: 50px;
+    bottom: 50px;
+    z-index: 10;
+    color:white;
+    background-color: #1b1f23;
+    border: white 2px solid;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px #000000;
 }
 
 #footer {

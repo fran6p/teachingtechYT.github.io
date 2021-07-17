@@ -1,6 +1,7 @@
 var pages = ["Home", "Calibration", "Troubleshooting", "Upgrade Guides", "Review Policy", "Sponsors", "Contact"]
 var urls = ["index.html", "calibration.html", "troubleshooting.html", "upgrades.html", "reviewpolicy.html", "sponsors.html", "contact.html"]
 var menu = '<img src="img/ttwhite.png" />';
+var tab;
 for(var i = 0; i < pages.length; i++){
     menu += '<a href="'+urls[i]+'" target="_self"';
     if(pages[i] == pageName){
@@ -19,7 +20,15 @@ $('head').append('<title>'+pageTitle+'</title>');
 var header ='<img src="img/tt.png" class="icon" style="vertical-align:middle;" /><h1>'+pageTitle+'</h1>';
 $('#header').html(header);
 
-var footer = `<p style="text-align: center;">This page is fully <a href="https://github.com/teachingtechYT/teachingtechYT.github.io" target="_blank">open source</a>. If you find a bug or have a feature request, please post in the <a href="https://github.com/teachingtechYT/teachingtechYT.github.io/issues" target="_blank">issues</a> section.</p>
+var up = '^ <span style="font-weight:bold;">TOP</span> ^';
+$('#up').html(up);
+$( "#up" ).bind( "click", function() {
+    $('html, body').animate({scrollTop: '0px'}, 500);
+});
+
+
+var footer = `
+<p style="text-align: center;">This page is fully <a href="https://github.com/teachingtechYT/teachingtechYT.github.io" target="_blank">open source</a>. If you find a bug or have a feature request, please post in the <a href="https://github.com/teachingtechYT/teachingtechYT.github.io/issues" target="_blank">issues</a> section. Make sure to read the <a href="https://github.com/teachingtechYT/teachingtechYT.github.io/issues/323" target="_blank">pinned readme</a>.</p>
     <p style="text-align: center;">This page was created using:</p>
     <ul style="margin-top:-20px;">
         <li><a href="https://jquery.com/" target="_blank">jQuery</a></li>
@@ -52,4 +61,5 @@ $(document).ready(function(){
     $(window).resize(function(){
         sizeBody();
     });
+    tab = $(location).attr('hash');
   });

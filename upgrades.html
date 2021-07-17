@@ -44,7 +44,7 @@
             <iframe width="480" height="360" src="https://www.youtube.com/embed/eF060dBEnfs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             <p>For this guide, we will start with the physical mounting of the BLtouch, then cover wiring, firmware changes, calibration, slicer changes, customisation and troubleshooting.</p>
             <h4>Physical mounting</h4>
-            <p>A BLtouch needs to be mounted to the print head of the machine. Like any ABL probe, the closer you can position it to the nozzle when looking directly from above, the better. The BLtouch should be secured tightly. Any play or wobble will destroy accuracy and repeataility. Other considerations when mounting are making sure the BLtouch is not so close to the hot end that it suffers damage from heat, and that its placement does not interfere with homing.</p>
+            <p>A BLtouch needs to be mounted to the print head of the machine. Ideally the BLtouch (or any other ABL probe) will be mounted as closely to the nozzle as possible, but not so close it fails from exposure to heat. A silicone sock over the heater block can assist here. The BLtouch should be secured tightly. Any play or wobble will destroy accuracy and repeataility. Other considerations when mounting are making sure the BLtouch is not so close to the hot end that it suffers damage from heat, and that its placement does not interfere with homing.</p>
             <p>As the BLtouch is very popular, there is a wide range of printed mounts available on Thingiverse and other 3D file sharing sites. Below are some examples:</p>
             <ul>
                 <li><a href="https://www.thingiverse.com/thing:3003725/" target="_blank">Ender 3 (Pro) / CR-10</a></li>
@@ -115,7 +115,7 @@
             </ul>
             <h4>Modes of operation and slicer changes</h4>
             <p>Before using ABL, the printer must be homed. Please note that in most cases, the BLtouch has replaced the Z axis endstop as the means of the printer knowing when Z is approaching zero.</p>
-            <p class="warning">The first time you home the printer, it is safest to start with the nozzle a long way above the bed. Then use your hand to trigger the probe in mid air. If there is a problem and the trigger doesn't work, this will give ou a chance to kill the power before a collision. Then consult the troublshooting section lower on the page.</p>
+            <p class="warning">The first time you home the printer, it is safest to start with the nozzle a long way above the bed. Then use your hand to trigger the probe in mid air. If there is a problem and the trigger doesn't work, this will give you a chance to kill the power before a collision. Then consult the troublshooting section lower on the page.</p>
             <p>After this, a <a href="https://marlinfw.org/docs/gcode/G029.html" target="_bank"><b>G29</b></a> command will initiate the probing of the bed. Optionally saving to EEPROM will then store the probed mesh.</p>
             <p>It is best to heat up the bed to printing temperatures before probing it. This is due to the bed surface expanding and/or warping when hot. We want to match the printing conditions as closely as possible.</p>
             <p>We have two options on how we utilise the BLtouch:</p>
@@ -138,7 +138,7 @@
             <h4>Troubleshooting</h4>
             <p>There's a lot to get right, which means there is also a lot that can go wrong. Fortunately, I have a full page dedicated to <a href="troubleshooting.html#bltouch">BLtouch troubleshooting</a> elsewhere on this site.</p>
         </div>
-
+    <div id="up"></div>
     <div id="footer"></div>
 </body>
 <script>
