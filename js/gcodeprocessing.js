@@ -103,6 +103,13 @@ function toggleJ() {
     }
 }
 
+function updateFeeds(feedrate) {
+    $('.perimFeed').html(Math.round(feedrate*0.6));
+    $('.solidFeed').html(Math.round(feedrate*0.8));
+    $('.travelFeed').html(Math.round(feedrate*1.67));
+    $('.firstFeed').html(Math.round(feedrate*0.5));
+}
+
 function processGcode(formName) {
     var name = formName.name;
     var description = formName.description.value;
@@ -216,7 +223,8 @@ function processGcode(formName) {
     }
     // collect acceleration inputs
     if(name == "accelerationForm"){
-        var feed = formName.feedrate.value*60;
+        var inner = formName.innerFeedrate.value*60;
+        var outer = formName.outerFeedrate.value*60;
         var jerk_or_jd = formName.jerk_or_jd.value;
         var a1 = formName.accel_a1.value;
         var a2 = formName.accel_a2.value;
@@ -248,6 +256,9 @@ function processGcode(formName) {
         var f3 = formName.accel_f3.value;
         var f4 = formName.accel_f4.value;
         var f5 = formName.accel_f5.value;
+    } else {
+        var feed = formName.baseFeedrate.value*60;
+        var feedMod = feed/3600;
     }
     // process start gcode
     // bed temp
@@ -297,26 +308,32 @@ function processGcode(formName) {
     if(name == "firstlayerForm"){
         var originalSquare = firstlayer[nozzleLayer];
         for(var i = 0; i <= 4; i++){
-            var square = "; squarez "+(i+1)+"\n"+originalSquare;
+            var square = "\n; square "+(i+1)+originalSquare;
             var firstlayerArray = square.split(/\n/g);
             var regexp = /X[0-9\.]+/;
             firstlayerArray.forEach(function(index, item){
                 if(firstlayerArray[item].search(/X/) > -1){
                     var value = parseFloat(firstlayerArray[item].match(regexp)[0].substring(1)) + offsets[i*2];
-                    firstlayerArray[item] = firstlayerArray[item].replace(regexp, "X"+String(value));
+                    firstlayerArray[item] = firstlayerArray[item].replace(regexp, "X"+String(value.toFixed(4)));
                 }
             });
             var regexp = /Y[0-9\.]+/;
             firstlayerArray.forEach(function(index, item){
                 if(firstlayerArray[item].search(/Y/) > -1){
                     var value = parseFloat(firstlayerArray[item].match(regexp)[0].substring(1)) + offsets[i*2+1];
-                    firstlayerArray[item] = firstlayerArray[item].replace(regexp, "Y"+String(value))
+                    firstlayerArray[item] = firstlayerArray[item].replace(regexp, "Y"+String(value.toFixed(4)))
                 }
             });
             square = firstlayerArray.join("\n");
             squares += square;
         }
         gcode = gcode+squares;
+        gcode = gcode.replace(/;retract1\nG1 Z[0-9\.]+ F1200/g, ";retract1\n;zhop1");
+            if(zhop > 0){
+                gcode = gcode.replace(/;zhop1/g, "G91;\nG1 Z"+zhop+" F1200; custom z hop\nG90;");
+            }  
+            gcode = gcode.replace(/;retract1/g, "G1 E-"+retDist+" F"+retSpeed+" ; custom retraction");
+            gcode = gcode.replace(/;unretract1/g, "G1 E"+retDistExtra+" F"+retSpeed+" ; custom un-retraction/prime");
     }
     // assign correct gcode source
     if(name == "baselineForm"){
@@ -357,14 +374,14 @@ function processGcode(formName) {
             gcodeArray.forEach(function(index, item){
                 if(gcodeArray[item].search(/X/) > -1){
                     var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1)) - 50;
-                    gcodeArray[item] = gcodeArray[item].replace(regexp, "X"+String(value));
+                    gcodeArray[item] = gcodeArray[item].replace(regexp, "X"+String(value.toFixed(4)));
                 }
             });
             var regexp = /Y[0-9\.]+/;
             gcodeArray.forEach(function(index, item){
                 if(gcodeArray[item].search(/Y/) > -1){
                     var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1)) - 50;
-                    gcodeArray[item] = gcodeArray[item].replace(regexp, "Y"+String(value))
+                    gcodeArray[item] = gcodeArray[item].replace(regexp, "Y"+String(value.toFixed(4)))
                 }
             });
             gcode = gcodeArray.join("\n");
@@ -375,7 +392,7 @@ function processGcode(formName) {
                 gcodeArray.forEach(function(index, item){
                     if(gcodeArray[item].search(/X/) > -1){
                         var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1)) + bedX;
-                        gcodeArray[item] = gcodeArray[item].replace(regexp, "X"+String(value));
+                        gcodeArray[item] = gcodeArray[item].replace(regexp, "X"+String(value.toFixed(4)));
                     }
                 });
                 gcode = gcodeArray.join("\n");
@@ -386,18 +403,36 @@ function processGcode(formName) {
                 gcodeArray.forEach(function(index, item){
                     if(gcodeArray[item].search(/Y/) > -1){
                         var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1)) + bedY;
-                        gcodeArray[item] = gcodeArray[item].replace(regexp, "Y"+String(value))
+                        gcodeArray[item] = gcodeArray[item].replace(regexp, "Y"+String(value.toFixed(4)))
                     }
                 });
                 gcode = gcodeArray.join("\n");
             }   
         }
+        // feedrate change
+        if(name != "accelerationForm"){
+            if(feedMod != 1){
+                var gcodeArray = gcode.split(/\n/g);
+                var regexp = /F[0-9]+/;
+                gcodeArray.forEach(function(index, item){
+                    if(gcodeArray[item].search(/F/) > -1){
+                        var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1));
+                        //alert(value);
+                        if(value != 1200){
+                            gcodeArray[item] = gcodeArray[item].replace(regexp, "F"+String(value*feedMod)+" ; custom feedrate")
+                        }
+                    }
+                });
+                gcode = gcodeArray.join("\n");
+            }
+        }
+
         // changes for acceleration test
         if(name == "accelerationForm"){
             // edit feedrates
-            gcode = gcode.replace(/F3600/g, "F"+feed+" ; custom feedrate - full");
-            gcode = gcode.replace(/F2880/g, "F"+feed+" ; custom feedrate - full");
-            gcode = gcode.replace(/F2160/g, "F"+feed/2+" ; custom feedrate - half");
+            gcode = gcode.replace(/F3600/g, "F"+outer+" ; custom outer perimeter feedrate");
+            gcode = gcode.replace(/F2880/g, "F"+outer+" ; custom outer perimeter feedrate");
+            gcode = gcode.replace(/F2160/g, "F"+inner+" ; custom inner perimeter feedrate");
             // add acceleration segments
             gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000 Z50000; custom raise acceleration limits\nM204 P"+a1+" ; custom acceleration - A\n;j1");
             gcode = gcode.replace(/;process Process-2/, "M204 P"+b1+" ; custom acceleration - B\n;j2");
@@ -497,6 +532,10 @@ function processGcode(formName) {
     if(formName.end.checked == true) {
         gcode = gcode.replace(/;customend/, "; custom end gcode\n"+customEnd);
     }
+    if(formName.deltaHome.checked == true) {
+        gcode = gcode.replace(/G28 X0 ; home X axis/, "G28 ; home all on delta");
+    }
+    
     // process finished gcode file
     downloadFile(description+'.gcode', gcode);
 }
