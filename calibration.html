@@ -48,16 +48,17 @@
                 <li>Sliced for Marlin firmware, although in most cases will still be compatible with other firmwares.</li>
                 <li>A build volume of 120 x 120 x 250 mm (This site can accommodate anything as small as this and anything larger)</li>
                 <li>1.75mm filament (However <b>M221 S38</b> for 2.85 mm filament and <b>M221 S34</b> for 3.0 mm filament can be applied in the custom start gcode field as compensation)</b></li>
+                <li>Absolute extrusion values (M82 as opposed to relative/M83)</li>
                 <li>0.4mm nozzle and 0.2mm layer height, although now additional configurations are now possible</li>
                 <li>Line width on auto, typically 120% of nozzle diameter</li>
                 <li>Defaut feedrate of 60mm/sec. Modifiers include 60% for perimeters, 80% for solid infill, 166% travel moves, and 50% for the first layer</li>
                 <li>Travel moves of 20 mm/sec for Z</li>
                 <li>Flow rate of 0.90. Please see the note on the bottom of the <a href="calibration.html#flow" target="_blank">flow</a> tab for instructions on adapting this to your printer.</li>
-                <li>Nozzle priming has been turned off to avoid bed clips or problems with delta printers. Use the custom start gcode feature to insert the priming dequence from your slicer profile.</li>
+                <li>Nozzle priming has been turned off to avoid bed clips or problems with delta printers. Use the custom start gcode feature to insert the priming sequence from your slicer profile.</li>
                 <li>A single layer skirt (except on the acceleration test)</li>
                 <li>100% part cooling fan for bridging</li>
                 <li>First layer height of 100%, width 120%</li>
-                <li>No minumum layer time, auto part cooling, etc</li>
+                <li>No minimum layer time, auto part cooling, etc</li>
                 <li>4 top layers, 3 bottom layers, 3 perimeters</li>
                 <li>20% rectilinear infill</li>
             </ul>
@@ -198,10 +199,10 @@
             <p>In this case, you need to insert <b>M301</b> (hot end) or <b>M304</b> (bed) into your slicer start gcode so the correct settings are loaded before each print.</p>
             <p>After PID auto tuning, the final values for P, I and D will be listed in the terminal. Retreive them and use them as follows for the hot end:</p>
             <pre>M301 E0 P[p value] I[i value] D[d value]</pre>
-            <p>This will set the PID values for the default hot end, eg. <b>M301 E0 P34.4 I0.02 D5.7</b> (bogus numbers, please don't copy them.</p>
+            <p>This will set the PID values for the default hot end, eg. <b>M301 E0 P34.4 I0.02 D5.7</b> (bogus numbers, please don't copy them).</p>
             <p>For the bed:</p>
             <pre>M304 P[p value] I[i value] D[d value]</pre>
-            <p>This will set the PID values for the bed, eg. <b>M304 P26.0 I1.33 D20.5</b> (bogus numbers, please don't copy them.</p>
+            <p>This will set the PID values for the bed, eg. <b>M304 P26.0 I1.33 D20.5</b> (bogus numbers, please don't copy them).</p>
         </div>
     </div>
 
@@ -320,7 +321,7 @@
 		<pre>M503</pre>
         <p><a href="https://marlinfw.org/docs/gcode/M092.html" target="_blank">M92</a> is used to report or set the steps per mm for each axis. M92 by itself will report the current parameters. We want to make note of the number after <b>E</b>, in the example below, <b>93.00</b>:</p>
         <img src="img/esteps1.jpg" />
-        <p>Now heat up your hot end to whatever temperature you usually print with plus 10 degrees. Once the temperature is stable, enter:</p>
+        <p>Manually move the nozzle high enough above the bed to provide adequate clearance to extrude filament. Now heat up your hot end to whatever temperature you usually print with plus 10 degrees. Once the temperature is stable, enter:</p>
         <pre>G91</pre>
         <p><a href="https://marlinfw.org/docs/gcode/G091.html" target="_blank">G91</a> puts the printer in relative movement mode. This means requesting 100mm of filament adds 100mm to the current position, instead of moving to the specific position of 100mm.</p>
         <p>For Klipper and Rep Rap Firmware, <b>M83</b> is used to select relative extruder movement instead.</p>
@@ -407,7 +408,7 @@
                     <td>3. Turn off top layers</td>
                     <td>Shell > Top/bottom thickness > Top layers: 0</td>
                     <td>Layer > Top solid layers: 0</td>
-                    <td>Print settings > Layers and perimeters > Horizontal layers > Top: 0</td>
+                    <td>Print settings > Layers and perimeters > Horizontal shells > Top: 0</td>
                 </tr>
                 <tr>
                     <td>4. Ensure wall thickness is a known value.<br />Substitute whatever values you like here. This example uses <b>0.4</b>, which is common for a 0.4mm nozzle and 0.2mm layer height.</td>
