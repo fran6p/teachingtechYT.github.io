@@ -77,8 +77,8 @@ function flowCalc2(){
 var maxExtVol = 7.22;
 var maxFeedRate = 100;
 function maxExt(){
-    var dia = document.maxExtrusion.filDia.value;
-    var max = document.maxExtrusion.maxFeed.value;
+    var dia = document.maxExtrusion1.filDia.value;
+    var max = document.maxExtrusion1.maxFeed.value;
     var result = ((Math.pow(dia/2, 2))*Math.PI)*(max/60);
     var str = result.toFixed(2);
     maxExtVol = parseFloat(str);
@@ -86,8 +86,8 @@ function maxExt(){
 }
 
 function maxFee(){
-    var layH = document.maxExtrusion.layerH.value;
-    var layW = document.maxExtrusion.layerW.value;
+    var layH = document.maxExtrusion2.layerH.value;
+    var layW = document.maxExtrusion2.layerW.value;
     var maxFeedRate = Math.floor(maxExtVol/(layH*layW));
     $('#maxFee').html(maxFeedRate);
 }
@@ -108,6 +108,12 @@ function updateFeeds(feedrate) {
     $('.solidFeed').html(Math.round(feedrate*0.8));
     $('.travelFeed').html(Math.round(feedrate*1.67));
     $('.firstFeed').html(Math.round(feedrate*0.5));
+}
+
+function updateFeedsTower(feedrate) {
+    $('.solidFeedTower').html(Math.round(feedrate*0.8));
+    $('.travelFeedTower').html(Math.round(feedrate*1.67));
+    $('.firstFeedTower').html(Math.round(feedrate*0.5));
 }
 
 function processGcode(formName) {
@@ -132,7 +138,7 @@ function processGcode(formName) {
         var fanPercentage = formName.fanSpeed.value;
         var fanSpeed = Math.round(fanPercentage*2.55);
     }
-    if(name == "temperatureForm"){
+    if(name == "temperatureForm"){ // collect temperature tower inputs
         var hotendTemp = formName.temp_a0.value;
         var a1 = formName.temp_a1.value;
         var b1 = formName.temp_b1.value;
@@ -141,6 +147,12 @@ function processGcode(formName) {
         var e1 = formName.temp_e1.value;
     } else {
         var hotendTemp = formName.hotendtemp.value;
+    }
+    if(name == "speedForm"){ // collect speed test inputs
+        var feedB = formName.feedrateB.value;
+        var feedC = formName.feedrateC.value;
+        var feedD = formName.feedrateD.value;
+        var feedE = formName.feedrateE.value;
     }
     // first layer test specifics
     if(name == "firstlayerForm"){
@@ -277,7 +289,7 @@ function processGcode(formName) {
     }
     // start hot end emp
     if(abl != 4){
-         gcode = gcode.replace(/;temp0a/g, "M104 S"+hotendTemp+" T0 ; custom hot end temp");
+         gcode = gcode.replace(/;temp0a/g, "M104 S"+(hotendTemp-50)+" T0 ; custom hot end temp minus 50 degrees");
          gcode = gcode.replace(/;temp0b/g, "M109 S"+hotendTemp+" T0 ; custom hot end temp");
     } else {
         gcode = gcode.replace(/;temp0a/g, "; Prusa Mini");
@@ -366,6 +378,9 @@ function processGcode(formName) {
     if(name == "accelerationForm"){
         gcode += acceleration[nozzleLayer];
     }
+    if(name == "speedForm"){
+        gcode += speed[nozzleLayer];
+    }
     // add end gcode
     if((formName.customEndOnly.checked == true) && (formName.end.checked == true)){
         gcode += ";customend\n";      
@@ -439,7 +454,6 @@ function processGcode(formName) {
                 gcodeArray.forEach(function(index, item){
                     if(gcodeArray[item].search(/F/) > -1){
                         var value = parseFloat(gcodeArray[item].match(regexp)[0].substring(1));
-                        //alert(value);
                         if(value != 1200){
                             gcodeArray[item] = gcodeArray[item].replace(regexp, "F"+String(value*feedMod)+" ; custom feedrate")
                         }
@@ -448,7 +462,15 @@ function processGcode(formName) {
                 gcode = gcodeArray.join("\n");
             }
         }
-
+        // changes for speed tower test
+        if(name == "speedForm"){
+            gcode = gcode.replace(/;process Process-1/, "M220 S100 ; custom speed A - "+feed/60+" mm/sec");
+            gcode = gcode.replace(/;process Process-2/, "M220 S"+(feedB/(feed/60)*100)+" ; custom speed B - "+feedB+" mm/sec");
+            gcode = gcode.replace(/;process Process-3/, "M220 S"+(feedC/(feed/60)*100)+" ; custom speed C - "+feedC+" mm/sec");
+            gcode = gcode.replace(/;process Process-4/, "M220 S"+(feedD/(feed/60)*100)+" ; custom speed D - "+feedD+" mm/sec");
+            gcode = gcode.replace(/;process Process-5/, "M220 S"+(feedE/(feed/60)*100)+" ; custom speed E - "+feedE+" mm/sec");
+            gcode += "M220 S100 ; return feedrate to normal";
+        }
         // changes for acceleration test
         if(name == "accelerationForm"){
             // edit feedrates
@@ -456,7 +478,11 @@ function processGcode(formName) {
             gcode = gcode.replace(/F2880/g, "F"+inner+" ; custom outer perimeter feedrate");
             gcode = gcode.replace(/F2160/g, "F"+outer+" ; custom inner perimeter feedrate");
             // add acceleration segments
-            gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000 Z50000; custom raise acceleration limits\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
+            if(formName.deltaAcc.checked == true){
+                gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000 Z50000; custom raise acceleration limits delta\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
+            } else {
+                gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000; custom raise acceleration limits\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
+            }
             gcode = gcode.replace(/;process Process-2/, "M204 P"+b1+" T"+b1+" ; custom acceleration - B\n;j2");
             gcode = gcode.replace(/;process Process-3/, "M204 P"+c1+" T"+c1+" ; custom acceleration - C\n;j3");
             gcode = gcode.replace(/;process Process-4/, "M204 P"+d1+" T"+d1+" ; custom acceleration - D\n;j4");
@@ -464,12 +490,21 @@ function processGcode(formName) {
             gcode = gcode.replace(/;process Process-6/, "M204 P"+f1+" T"+f1+" ; custom acceleration - F\n;j6");
             // add jerk/junction deviation segments
             if(jerk_or_jd == "jerk"){
-                gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" Z"+a5+" ; custom jerk - A");
-                gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" Z"+b5+" ; custom jerk - B");
-                gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" Z"+c5+" ; custom jerk - C");
-                gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" Z"+d5+" ; custom jerk - D");
-                gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" Z"+e5+" ; custom jerk - E");
-                gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" Z"+f5+" ; custom jerk - F");
+                if(formName.deltaAcc.checked == true){
+                    gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" Z"+a5+" ; custom jerk delta - A");
+                    gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" Z"+b5+" ; custom jerk delta - B");
+                    gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" Z"+c5+" ; custom jerk delta - C");
+                    gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" Z"+d5+" ; custom jerk delta - D");
+                    gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" Z"+e5+" ; custom jerk delta - E");
+                    gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" Z"+f5+" ; custom jerk delta - F");
+                } else {
+                    gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" ; custom jerk - A");
+                    gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" ; custom jerk - B");
+                    gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" ; custom jerk - C");
+                    gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" ; custom jerk - D");
+                    gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" ; custom jerk - E");
+                    gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" ; custom jerk - F");
+                }
             } else {
                 gcode = gcode.replace(/;j1/, "M205 J"+a4+" ; custom junction deviation - A");
                 gcode = gcode.replace(/;j2/, "M205 J"+b4+" ; custom junction deviation - B");

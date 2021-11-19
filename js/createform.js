@@ -1,9 +1,11 @@
 function displayCustom(){
+    // custom start
     if($(tab+' input[name="start"]').is(':checked')){
         $('.startExp').show();
     } else {
         $('.startExp').hide();
     }
+    // delta
     if($(tab+' input[name="centre"]').is(':checked')){
         $('.dia').show();
         $('.XY').hide();
@@ -11,18 +13,101 @@ function displayCustom(){
         $('.dia').hide();
         $('.XY').show();
     }
+    // custom end
     if($(tab+' input[name="end"]').is(':checked')){
         $('.endExp').show();
     } else {
         $('.endExp').hide();
     }
+    // firmware selector
+    if($("#marlinSelector").prop("checked") == true){
+        $('.marlinContent').show();
+        $('.klipperContent').hide();
+        $('.rrfContent').hide();
+    }
+    if($("#klipperSelector").prop("checked") == true){
+        $('.marlinContent').hide();
+        $('.klipperContent').show();
+        $('.rrfContent').hide();
+    }
+    if($("#rrfSelector").prop("checked") == true){
+        $('.marlinContent').hide();
+        $('.klipperContent').hide();
+        $('.rrfContent').show();
+    }
+    // slicer selector
+    if($("#curaSelector").prop("checked") == true){
+        $('.curaContent').show();
+        $('.s3dContent').hide();
+        $('.prusaslicerContent').hide();
+        $('.superslicerContent').hide();
+        $('.ideamakerContent').hide();
+    }
+    if($("#s3dSelector").prop("checked") == true){
+        $('.curaContent').hide();
+        $('.s3dContent').show();
+        $('.prusaslicerContent').hide();
+        $('.superslicerContent').hide();
+        $('.ideamakerContent').hide();
+    }
+    if($("#prusaslicerSelector").prop("checked") == true){
+        $('.curaContent').hide();
+        $('.s3dContent').hide();
+        $('.prusaslicerContent').show();
+        $('.superslicerContent').hide();
+        $('.ideamakerContent').hide();
+    }
+    if($("#superslicerSelector").prop("checked") == true){
+        $('.curaContent').hide();
+        $('.s3dContent').hide();
+        $('.prusaslicerContent').hide();
+        $('.superslicerContent').show();
+        $('.ideamakerContent').hide();
+    }
+    if($("#ideamakerSelector").prop("checked") == true){
+        $('.curaContent').hide();
+        $('.s3dContent').hide();
+        $('.prusaslicerContent').hide();
+        $('.superslicerContent').hide();
+        $('.ideamakerContent').show();
+    }
 }
+
+var firmwareSelector = /*html*/ `<form name="firmwareSelect" class="firmwareSelector">
+<p style="margin-left:20px;">Use the button to switch instructions for different firmwares:
+<input name="firmware" id="marlinSelector" value="marlin" checked type="radio" onchange="displayCustom()"/>
+<label for="marlinSelector">Marlin</label>
+<input name="firmware" id="klipperSelector" value="klipper" type="radio" onchange="displayCustom()"/>
+<label for="klipperSelector">Klipper</label>
+<input name="firmware" id="rrfSelector" value="rrf" checked type="radio" onchange="displayCustom()"/>
+<label for="rrfSelector">RRF</label>
+</p>
+</form>
+`;
+
+var slicerSelector = /*html*/ `<form name="slicerSelect" class="slicerSelector">
+<p style="margin-left:20px;">Use the button to switch instructions for different slicers:</p>
+<p><input name="slicer" id="curaSelector" value="cura" checked type="radio" onchange="displayCustom()"/>
+<label for="curaSelector">Cura</label>
+<input name="slicer" id="s3dSelector" value="s3d" type="radio" onchange="displayCustom()"/>
+<label for="s3dSelector">Simplify3D</label>
+<input name="slicer" id="prusaslicerSelector" value="prusaslicer" checked type="radio" onchange="displayCustom()"/>
+<label for="prusaslicerSelector">PrusaSlicer</label>
+<input name="slicer" id="superslicerSelector" value="superslicer" checked type="radio" onchange="displayCustom()"/>
+<label for="superslicerSelector">SuperSlicer</label>
+<input name="slicer" id="ideamakerSelector" value="ideamaker" checked type="radio" onchange="displayCustom()"/>
+<label for="ideamakerSelector">ideaMaker</label>
+</p>
+</form>
+`;
+
 
 var nozzleLayer = /*html*/ `<h4>Nozzle Diameter / Layer Height</h4>
     <p>Select your nozzle diameter and layer height. If you have not changed your nozzle, it will likely be 0.4 mm. 0.2 mm is a typical layer height for this nozzle.</p>
     <p>25 options are available, however some of the tests don't work very well with the larger options.</p>
     <label for="nozzleLayer">Select nozzle diameter / layer height:</label>
     <select name="nozzleLayer">
+        <option value="15_08">0.15 mm nozzle / 0.08 mm layer height</option>
         <option value="20_05">0.20 mm nozzle / 0.05 mm layer height</option>
         <option value="20_10">0.20 mm nozzle / 0.10 mm layer height</option>
         <option value="20_15">0.20 mm nozzle / 0.15 mm layer height</option>
@@ -230,16 +315,62 @@ var retractionTower = /*html*/ `<h4>Retraction</h4>
     </tbody>
 </table>`;
 
-var feedrate = /*html*/ `<h4>Feedrate</h4>
+var feedrateReg = /*html*/ `<h4>Feedrate</h4>
 <p>The default printing speed is 60 mm/sec, with modifiers including 60% for perimeters, 80% for solid infill, travel moves 166%, and 50% of these for the first layer. Modify the base feedrate here and the generated gcode will be modified using the same proportions (<b>calculated feedrates shown in grey</b>). Please note extruder retraction/unretraction and Z-hop speeds will be unaffected by this.</p>
 <p><label>Base feedrate (mm/sec): <input type="number" name="baseFeedrate" value="60" min="5" max="1000" step="1" onchange="updateFeeds(this.value);"></label>
 <span  class="summary">Perimeters: <b><span class="perimFeed">36</span> mm/s</b></span><span class="summary">Solid infill: <b><span class="solidFeed">48</span> mm/s</b></span><span class="summary">Travel moves: <b><span class="travelFeed">100</span> mm/s</b></span><span class="summary">First layer: <b><span class="firstFeed">30</span> mm/s</b></span></p>
 `;
 
+var feedrateTower = /*html*/ `<h4>Feedrate/speed</h4>
+<p>The default printing speed is modified with 100% for perimeters, 166% for travel moves, and 50% of these for the first layer. For segment A, generated gcode will be modified using these proportions (<b>calculated feedrates shown in grey</b>). Please note extruder retraction/unretraction and Z-hop speeds will be unaffected by this.</p>
+<p>In this test the feedrate you enter is for the single, outer perimeter. Select a safe feedrate for segment A to ensure good adhesion with the bed. Increase feedrate for segments B to E to your liking. As this print is completed in vase mode, there are no retractions.</p>
+<p><span class="sug">Suggested increments for how much to vary the value for each segment are shown in green.</span></p>
+<table>
+    <thead>
+        <tr>
+            <th>Reference diagram</th>
+            <th>Segment</th>
+            <th>Feedrate (mm/sec) <span class="sug">&#177; 5-20</span></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="5"><img src="img/speeddiagram.jpg" /></td>
+            <td style="text-align: center;">E</td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateE" value="60" min="5" max="1000" step="1"></td>
+        </tr>
+        <tr>
+            <td style="text-align: center;">D</td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateD" value="50" min="5" max="1000" step="1"></td>
+        </tr>
+        <tr>
+            <td style="text-align: center;">C</td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateC" value="40" min="5" max="1000" step="1"></td>
+        </tr>
+        <tr>
+            <td style="text-align: center;">B</td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateB" value="30" min="5" max="1000" step="1"></td>
+        </tr>
+        <tr>
+            <td style="text-align: center;">A</td>
+            <td>Perimeter feedrate:  <input type="number" name="baseFeedrate" value="20" min="5" max="1000" step="1" onchange="updateFeedsTower(this.value);">
+            <p><span class="summary">Solid infill: <b><span class="solidFeedTower">48</span> mm/s</b></span><span class="summary">Travel moves: <b><span class="travelFeedTower">100</span> mm/s</b></span><span class="summary">First layer: <b><span class="firstFeedTower">30</span> mm/s</b></span></p><p>The above feedrate modifiers only apply to the first layer.</p></td>            
+        </tr>
+    </tbody>
+</table>
+`;
+
+var feedrateWarning = /*html*/ `
+<p class="warning">Some users have experienced printing failures with gcode generated by this site when their regular slicer is able to create a successful print with the same STL. The gcode on this site does not use any slow down for short layers to aid cooling, whereas default profiles in some slicers do. This means that your regular slicer may be printing this file a fair bit slower than you realise. To match this on this site, simply lower the default feedrate in the form above.</p>`
+
+
 var accel = /*html*/ `<h4>Base feedrate/speed</h4>
 <p>You can specify the feedrate for X and Y movements. Both the inner and outer perimeter speed can be specified. It is recommend to follow the process above to calculate safe limits for feedrate.</p>
 <p><label>Inner perimeter feedrate (mm/sec): <input type="number" name="innerFeedrate" value="60" min="5" max="1000" step="1"></label></p>
 <p><label>Outer perimeter feedrate (mm/sec): <input type="number" name="outerFeedrate" value="60" min="5" max="1000" step="1"></label></p>
+<h4>Delta printer</h4>
+<p>Delta printers require X, Y and Z acceleration limits to be raised at the start of the test, whereas cartesian and coreXY only need X and Y limits raised. Tick the box if you are printing this test on a delta printer in order to set the correct behaviour.
+<p><label>Delta printer: <input name="deltaAcc" type="checkbox" value="off"></label></p>
 <h4>Acceleration and jerk/junction deviation</h4>
 <p>After entering <b>M503</b>, I have determined my 3D printer firmware uses:</p>
 <label>Jerk: <input type="radio" value="jerk" name="jerk_or_jd" checked="checked" onchange="toggleJ()"></label>
@@ -352,8 +483,13 @@ function createForm(n){
     }
     if(n == "acceleration"){
         document.write(accel);
+    } else if(n == "speed"){
+        document.write(feedrateTower);
     } else {
-        document.write(feedrate);
+        document.write(feedrateReg);
+    }
+    if(n == "temperature") {
+        document.write(feedrateWarning);
     }
     document.write(endGcode);
     document.write(preview);
