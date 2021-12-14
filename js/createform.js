@@ -116,6 +116,7 @@ var nozzleLayer = /*html*/ `<h4>Nozzle Diameter / Layer Height</h4>
         <option value="30_10">0.30 mm nozzle / 0.10 mm layer height</option>
         <option value="30_15">0.30 mm nozzle / 0.15 mm layer height</option>
         <option value="30_20">0.30 mm nozzle / 0.20 mm layer height</option>
+        <option value="35_20">0.35 mm nozzle / 0.20 mm layer height</option>
         <option value="40_12">0.40 mm nozzle / 0.12 mm layer height</option>    
         <option value="40_16">0.40 mm nozzle / 0.16 mm layer height</option>
         <option value="40_20" selected>0.40 mm nozzle / 0.20 mm layer height</option>
@@ -156,22 +157,23 @@ var startGcode = /*html*/ `<h4>Additional start gcode</h4>
             </div>`;
 
 var bedDims =  /*html*/ `<h4>Bed dimensions</h4>
-            <p>Inputting the correct number will attempt to move the print into the centre of the bed. If the 0,0 at centre button is checked for a delta, also enter your bed diameter. Please check the gcode to ensure it will fit on your bed.</p>
+            <p>Inputting the correct number will attempt to move the print into the centre of the bed. If the 0,0 at centre button is checked for a delta, also enter your bed diameter. Please check the gcode to ensure it will fit on your bed. For unusual 3D printers, apply X/Y offsets to shift the gcode on the build platform. 99.9% of users will leave this on 0,0. Please ensure you check a gcode preview before printing if you use this feature.</p>
             <label>0,0 at centre of bed (most deltas):<input name="centre" type="checkbox" onchange="displayCustom();" value="centre"></label>
             <span class="XY"><label>Bed X dimension (mm): <input type="number" name="bedx" value="100" min="100" max="600" step="1"></label>
             <label>Bed Y dimension (mm): <input type="number" name="bedy" value="100" min="100" max="600" step="1"></label><br /></span>
-            <span class="dia"><label>Bed diameter dimension (mm): <input type="number" name="beddia" value="100" min="100" max="600" step="1"></label></span>`;
+            <span class="dia"><label>Bed diameter dimension (mm): <input type="number" name="beddia" value="100" min="100" max="600" step="1"></label></span>
+            <label>X offset (mm): <input type="number" name="offsetx" value="0" min="-1000" max="1000" step="1"></label> <label>Y offset (mm): <input type="number" name="offsety" value="0" min="-1000" max="1000" step="1"></label>`;
 
 var extraMargin = /*html*/ `<p>You may add extra margin for clearing bed clips, etc. Caution! If this is too large on small printers the squares will overlap. You may also use a negative value to space the squares further apart. Make sure to preview the gcode before printing!</p>
             <label>Extra margin from edge (mm): <input type="number" name="margin" value="0" min="0" max="100" step="1"></label>`;
 
 var tempReg = /*html*/ `<h4>Temperatures</h4>
-<p>For the hot end and bed respectively, typical PLA temperatures are 200 and 60, PETG 235 and 80, ABS 250 and 100, TPU 230 and 5 (effectively off).</p>
+<p>For the hot end and bed respectively, typical PLA temperatures are 200 and 60, PETG 235 and 80, ABS 250 and 100, TPU 230 and 5 (effectively off). Note: Homing and ABL sequence will be completed with a hot end temperature 50 degrees below what is set.</p>
 <label>Hot end temperature (deg C): <input type="number" name="hotendtemp" value="200" min="160" max="450"></label>
 <label>Bed temperature (deg C): <input type="number" name="bedtemp" value="60" min="0" max="150"></label> (use 0 for a non heated bed)<br />`;
 
 var tempTower = /*html*/ `<h4>Bed Temperature</h4>
-<p>For bed, typical PLA temperatures are 60, PETG 80, ABS 100, TPU 5 (effectively off).</p>
+<p>For bed, typical PLA temperatures are 60, PETG 80, ABS 100, TPU 5 (effectively off).  Note: Homing and ABL sequence will be completed with a hot end temperature 50 degrees below what is set.</p>
 <label>Bed temperature (deg C): <input type="number" name="bedtemp" value="60" min="0" max="150"></label> (use 0 for a non heated bed)
 <h4>Hot end temperature</h4>
 <p>Typically, filament comes with a recommended hot end temperature. It is recommended to use values either side of this. For instance, if a PLA filament asked for 200 degrees, you may vary the temperature from 190, 195, 200, 205, 210 (the default values of the form). Typically, the first layer temperature will be elevated to increase adhesion with the bed, especially if a lower than usual temperature is being trialled for segment A. <span class="sug">Suggested increments for how much to vary the value for each segment are shown in green.</span></p>
@@ -455,7 +457,7 @@ var endGcode = /*html*/ `<h4>Additional end gcode</h4>
     <textarea name="endgcode"></textarea>
 </div>`;
 
-var preview = /*html*/ `<p>It is advised to preview the generated gcode through your slicer or <a href="http://gcode.ws/" target="_blank">Gcode.ws</a> before printing.`;
+var preview = /*html*/ `<p>It is advised to preview the generated gcode through your slicer or <a href="http://zupfe.velor.ca" target="_blank">Zupfe GCode Viewer</a> before printing.`;
 
 function createForm(n){
     document.write('<input type="hidden" name="description" value="'+n+'">')
