@@ -74,6 +74,26 @@ function flowCalc2(){
     $("#flow2result").show();
 }
 
+function volumeCalc(){
+    var nozzleLayer = speedForm.nozzleLayer.value;
+    extrusionArray = nozzleLayer.split("_");
+    var width = extrusionArray[0]*1.2;
+    var height = extrusionArray[1];
+    var area = (width/100)*(height/100);
+    $("#volE").html(parseFloat(document.speedForm.feedrateE.value*area).toFixed(2))
+    $("#volD").html(parseFloat(document.speedForm.feedrateD.value*area).toFixed(2))
+    $("#volC").html(parseFloat(document.speedForm.feedrateC.value*area).toFixed(2))
+    $("#volB").html(parseFloat(document.speedForm.feedrateB.value*area).toFixed(2));
+    $("#volA").html(parseFloat(document.speedForm.baseFeedrate.value*area).toFixed(2));
+}
+
+function reverseVol(){
+    var width = document.maxExtrusion3.layerW.value;
+    var height = document.maxExtrusion3.layerH.value;
+    var vol = document.maxExtrusion3.maxVol.value
+    $("#maxFee2").html(parseFloat(vol/width/height).toFixed(2));
+}
+
 var maxExtVol = 7.22;
 var maxFeedRate = 100;
 function maxExt(){
@@ -100,6 +120,26 @@ function toggleJ() {
     } else {
         $(".jdtd").show();
         $(".jerktd").hide();
+    }
+}
+
+function toggleAF() {
+    var value = document.accelerationForm.accFirmware.value;
+    if(value == "accMarlin"){
+        $(".accMarlinContent").show();
+        $(".accKlipperContent").hide();
+        $(".accRrfContent").hide();
+        toggleJ();
+    }
+    if(value == "accKlipper"){
+        $(".accMarlinContent").hide();
+        $(".accKlipperContent").show();
+        $(".accRrfContent").hide();
+    }
+    if(value == "accRRF"){
+        $(".accMarlinContent").hide();
+        $(".accKlipperContent").hide();
+        $(".accRrfContent").show();
     }
 }
 
@@ -237,6 +277,7 @@ function processGcode(formName) {
     }
     // collect acceleration inputs
     if(name == "accelerationForm"){
+        var accFirmware = formName.accFirmware.value;
         var inner = formName.innerFeedrate.value*60;
         var outer = formName.outerFeedrate.value*60;
         var jerk_or_jd = formName.jerk_or_jd.value;
@@ -245,31 +286,55 @@ function processGcode(formName) {
         var a3 = formName.accel_a3.value;
         var a4 = formName.accel_a4.value;
         var a5 = formName.accel_a5.value;
+        var a6 = formName.accel_a6.value;
+        var a7 = formName.accel_a7.value;
+        var a8 = formName.accel_a8.value;
+        var a9 = formName.accel_a9.value;
         var b1 = formName.accel_b1.value;
         var b2 = formName.accel_b2.value;
         var b3 = formName.accel_b3.value;
         var b4 = formName.accel_b4.value;
         var b5 = formName.accel_b5.value;
+        var b6 = formName.accel_b6.value;
+        var b7 = formName.accel_b7.value;
+        var b8 = formName.accel_b8.value;
+        var b9 = formName.accel_b9.value;
         var c1 = formName.accel_c1.value;
         var c2 = formName.accel_c2.value;
         var c3 = formName.accel_c3.value;
         var c4 = formName.accel_c4.value;
         var c5 = formName.accel_c5.value;
+        var c6 = formName.accel_c6.value;
+        var c7 = formName.accel_c7.value;
+        var c8 = formName.accel_c8.value;
+        var c9 = formName.accel_c9.value;
         var d1 = formName.accel_d1.value;
         var d2 = formName.accel_d2.value;
         var d3 = formName.accel_d3.value;
         var d4 = formName.accel_d4.value;
         var d5 = formName.accel_d5.value;
+        var d6 = formName.accel_d6.value;
+        var d7 = formName.accel_d7.value;
+        var d8 = formName.accel_d8.value;
+        var d9 = formName.accel_d9.value;
         var e1 = formName.accel_e1.value;
         var e2 = formName.accel_e2.value;
         var e3 = formName.accel_e3.value;
         var e4 = formName.accel_e4.value;
         var e5 = formName.accel_e5.value;
+        var e6 = formName.accel_e6.value;
+        var e7 = formName.accel_e7.value;
+        var e8 = formName.accel_e8.value;
+        var e9 = formName.accel_e9.value;
         var f1 = formName.accel_f1.value;
         var f2 = formName.accel_f2.value;
         var f3 = formName.accel_f3.value;
         var f4 = formName.accel_f4.value;
         var f5 = formName.accel_f5.value;
+        var f6 = formName.accel_f6.value;
+        var f7 = formName.accel_f7.value;
+        var f8 = formName.accel_f8.value;
+        var f9 = formName.accel_f9.value;
     } else {
         var feed = formName.baseFeedrate.value*60;
         var feedMod = feed/3600;
@@ -485,41 +550,80 @@ function processGcode(formName) {
             gcode = gcode.replace(/F3600/g, "F"+inner+" ; custom outer perimeter feedrate");
             gcode = gcode.replace(/F2880/g, "F"+inner+" ; custom outer perimeter feedrate");
             gcode = gcode.replace(/F2160/g, "F"+outer+" ; custom inner perimeter feedrate");
-            // add acceleration segments
-            if(formName.deltaAcc.checked == true){
-                gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000 Z50000; custom raise acceleration limits delta\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
+            // raise delta limits
+            if(accFirmware == "accKlipper"){
+                gcode = gcode.replace(/;process Process-1/, "SET_VELOCITY_LIMIT ACCEL="+a1+" ACCEL_TO_DECEL="+a1+"; custom acceleration - A\n;j1");
             } else {
-                gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000; custom raise acceleration limits\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
-            }
-            gcode = gcode.replace(/;process Process-2/, "M204 P"+b1+" T"+b1+" ; custom acceleration - B\n;j2");
-            gcode = gcode.replace(/;process Process-3/, "M204 P"+c1+" T"+c1+" ; custom acceleration - C\n;j3");
-            gcode = gcode.replace(/;process Process-4/, "M204 P"+d1+" T"+d1+" ; custom acceleration - D\n;j4");
-            gcode = gcode.replace(/;process Process-5/, "M204 P"+e1+" T"+e1+" ; custom acceleration - E\n;j5");
-            gcode = gcode.replace(/;process Process-6/, "M204 P"+f1+" T"+f1+" ; custom acceleration - F\n;j6");
-            // add jerk/junction deviation segments
-            if(jerk_or_jd == "jerk"){
                 if(formName.deltaAcc.checked == true){
-                    gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" Z"+a5+" ; custom jerk delta - A");
-                    gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" Z"+b5+" ; custom jerk delta - B");
-                    gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" Z"+c5+" ; custom jerk delta - C");
-                    gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" Z"+d5+" ; custom jerk delta - D");
-                    gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" Z"+e5+" ; custom jerk delta - E");
-                    gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" Z"+f5+" ; custom jerk delta - F");
+                    gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000 Z50000; custom raise acceleration limits delta\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
                 } else {
-                    gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" ; custom jerk - A");
-                    gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" ; custom jerk - B");
-                    gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" ; custom jerk - C");
-                    gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" ; custom jerk - D");
-                    gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" ; custom jerk - E");
-                    gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" ; custom jerk - F");
+                    gcode = gcode.replace(/;process Process-1/, "M201 X50000 Y50000; custom raise acceleration limits\nM204 P"+a1+" T"+a1+" ; custom acceleration - A\n;j1");
+                }
+            }
+            // add acceleration segments
+            if(accFirmware == "accKlipper"){
+                gcode = gcode.replace(/;process Process-2/, "SET_VELOCITY_LIMIT ACCEL="+b1+" ACCEL_TO_DECEL="+b1+"; custom acceleration - B\n;j2");
+                gcode = gcode.replace(/;process Process-3/, "SET_VELOCITY_LIMIT ACCEL="+c1+" ACCEL_TO_DECEL="+c1+"; custom acceleration - C\n;j3");
+                gcode = gcode.replace(/;process Process-4/, "SET_VELOCITY_LIMIT ACCEL="+d1+" ACCEL_TO_DECEL="+d1+"; custom acceleration - D\n;j4");
+                gcode = gcode.replace(/;process Process-5/, "SET_VELOCITY_LIMIT ACCEL="+e1+" ACCEL_TO_DECEL="+e1+"; custom acceleration - E\n;j5");
+                gcode = gcode.replace(/;process Process-6/, "SET_VELOCITY_LIMIT ACCEL="+f1+" ACCEL_TO_DECEL="+f1+"; custom acceleration - F\n;j6");
+            } else {
+                gcode = gcode.replace(/;process Process-2/, "M204 P"+b1+" T"+b1+" ; custom acceleration - B\n;j2");
+                gcode = gcode.replace(/;process Process-3/, "M204 P"+c1+" T"+c1+" ; custom acceleration - C\n;j3");
+                gcode = gcode.replace(/;process Process-4/, "M204 P"+d1+" T"+d1+" ; custom acceleration - D\n;j4");
+                gcode = gcode.replace(/;process Process-5/, "M204 P"+e1+" T"+e1+" ; custom acceleration - E\n;j5");
+                gcode = gcode.replace(/;process Process-6/, "M204 P"+f1+" T"+f1+" ; custom acceleration - F\n;j6");
+            }
+
+            // add jerk/junction deviation segments
+            if(accFirmware == "accMarlin"){
+                if(jerk_or_jd == "jerk"){
+                    if(formName.deltaAcc.checked == true){
+                        gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" Z"+a5+" ; custom jerk delta - A");
+                        gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" Z"+b5+" ; custom jerk delta - B");
+                        gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" Z"+c5+" ; custom jerk delta - C");
+                        gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" Z"+d5+" ; custom jerk delta - D");
+                        gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" Z"+e5+" ; custom jerk delta - E");
+                        gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" Z"+f5+" ; custom jerk delta - F");
+                    } else {
+                        gcode = gcode.replace(/;j1/, "M205 X"+a2+" Y"+a3+" ; custom jerk - A");
+                        gcode = gcode.replace(/;j2/, "M205 X"+b2+" Y"+b3+" ; custom jerk - B");
+                        gcode = gcode.replace(/;j3/, "M205 X"+c2+" Y"+c3+" ; custom jerk - C");
+                        gcode = gcode.replace(/;j4/, "M205 X"+d2+" Y"+d3+" ; custom jerk - D");
+                        gcode = gcode.replace(/;j5/, "M205 X"+e2+" Y"+e3+" ; custom jerk - E");
+                        gcode = gcode.replace(/;j6/, "M205 X"+f2+" Y"+f3+" ; custom jerk - F");
+                    }
+                } else {
+                    gcode = gcode.replace(/;j1/, "M205 J"+a4+" ; custom junction deviation - A");
+                    gcode = gcode.replace(/;j2/, "M205 J"+b4+" ; custom junction deviation - B");
+                    gcode = gcode.replace(/;j3/, "M205 J"+c4+" ; custom junction deviation - C");
+                    gcode = gcode.replace(/;j4/, "M205 J"+d4+" ; custom junction deviation - D");
+                    gcode = gcode.replace(/;j5/, "M205 J"+e4+" ; custom junction deviation - E");
+                    gcode = gcode.replace(/;j6/, "M205 J"+f4+" ; custom junction deviation - F");
+                }
+            } else if(accFirmware == "accRRF") {
+                if(formName.deltaAcc.checked == true){
+                    gcode = gcode.replace(/;j1/, "M205 X"+a7+" Y"+a8+" Z"+a9+" ; custom MISC delta - A");
+                    gcode = gcode.replace(/;j2/, "M205 X"+b7+" Y"+b8+" Z"+b9+" ; custom MISC delta - B");
+                    gcode = gcode.replace(/;j3/, "M205 X"+c7+" Y"+c8+" Z"+c9+" ; custom MISC delta - C");
+                    gcode = gcode.replace(/;j4/, "M205 X"+d7+" Y"+d8+" Z"+d9+" ; custom MISC delta - D");
+                    gcode = gcode.replace(/;j5/, "M205 X"+e7+" Y"+e8+" Z"+e9+" ; custom MISC delta - E");
+                    gcode = gcode.replace(/;j6/, "M205 X"+f7+" Y"+f8+" Z"+f9+" ; custom MISC delta - F");
+                } else {
+                    gcode = gcode.replace(/;j1/, "M205 X"+a7+" Y"+a8+" ; custom MISC - A");
+                    gcode = gcode.replace(/;j2/, "M205 X"+b7+" Y"+b8+" ; custom MISC - B");
+                    gcode = gcode.replace(/;j3/, "M205 X"+c7+" Y"+c8+" ; custom MISC - C");
+                    gcode = gcode.replace(/;j4/, "M205 X"+d7+" Y"+d8+" ; custom MISC - D");
+                    gcode = gcode.replace(/;j5/, "M205 X"+e7+" Y"+e8+" ; custom MISC - E");
+                    gcode = gcode.replace(/;j6/, "M205 X"+f7+" Y"+f8+" ; custom MISC - F");
                 }
             } else {
-                gcode = gcode.replace(/;j1/, "M205 J"+a4+" ; custom junction deviation - A");
-                gcode = gcode.replace(/;j2/, "M205 J"+b4+" ; custom junction deviation - B");
-                gcode = gcode.replace(/;j3/, "M205 J"+c4+" ; custom junction deviation - C");
-                gcode = gcode.replace(/;j4/, "M205 J"+d4+" ; custom junction deviation - D");
-                gcode = gcode.replace(/;j5/, "M205 J"+e4+" ; custom junction deviation - E");
-                gcode = gcode.replace(/;j6/, "M205 J"+f4+" ; custom junction deviation - F");
+                gcode = gcode.replace(/;j1/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+a6+" ; custom SCV - A");
+                gcode = gcode.replace(/;j2/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+b6+" ; custom SCV - B");
+                gcode = gcode.replace(/;j3/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+c6+" ; custom SCV - C");
+                gcode = gcode.replace(/;j4/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+d6+" ; custom SCV - D");
+                gcode = gcode.replace(/;j5/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+e6+" ; custom SCV - E");
+                gcode = gcode.replace(/;j6/, "SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY="+f6+" ; custom SCV - F");
             }
         }
         // process user retraction
@@ -603,6 +707,117 @@ function processGcode(formName) {
     
     // process finished gcode file
     downloadFile(description+'.gcode', gcode);
+}
+
+function convertGcode() {
+    var file = document.getElementById("uploadedFile").files[0];
+    console.log("1");
+    if(file) { // A file has been atached with the file input
+        if(file.name.search(".gcode") == -1){
+            console.log("2a: Non .gcode file.");
+            alert("Please select a gcode file only");
+            return;
+        }
+        var reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = function (evt) {
+            console.log("2b: Converting uploaded file.");
+            document.diagZhop.tradGcode.value = evt.target.result; // set gcode variables to file contents
+            console.log("3");
+        }
+        reader.onerror = function (evt) {
+            alert("Error reading file"); // warn user if file not suitable
+            console.log("2c: Error reading file.");
+        }
+    } else {
+        console.log("2d: Nothing to convert");
+        alert("No file attached.");
+    }
+}
+
+function copyToClipboard(div) {
+    var copyText = document.getElementById(div);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(copyText.value);
+}
+
+function diagonalZhop() {
+    document.diagZhop.diagZhopGcode.value = "";
+    var hop = parseFloat(document.diagZhop.diagZheight.value); // Collect user specific vertical height
+    var minLength = parseFloat(document.diagZhop.minLength.value) // Collect user specified minimum travel length
+    var version = document.diagZhop.version.value; // Collect user specified version input
+    var oldX, oldY, nextX, nextY, halfX, halfY, oldZ, halfZ, oldF, travelLength, startedExtrusion, gType;
+    var regexpX = /X-?[0-9\.]+/; // Regex to search for X coordinates
+    var regexpY = /Y-?[0-9\.]+/; // Regex to search for Y coordinates
+    var regexpZ = /Z-?[0-9\.]+/; // Regex to search for Z coordinates
+    var regexpF = /F[0-9\.]+/;// Regex to search for F feedrate
+    var gcode = document.diagZhop.tradGcode.value; // Collect user input gcode
+    if(gcode == ""){ // No file attached or input into text field
+        alert("Please enter gcode into the text box.");
+        return;
+    }
+    var gcodeArray = gcode.split(/\n/g); // Split gcode line by line into an array
+    gcodeArray.forEach(function(index, item){ // For each line..
+        if((gcodeArray[item].search("G0") == 0) || (gcodeArray[item].search("G1") == 0)){ // Check if G0/G1 present
+            if(gcodeArray[item].search(/Z/) > -1){ // Search for change of Z height / layer change
+                oldZ = parseFloat(gcodeArray[item].match(regexpZ)[0].substring(1)); // Store current Z height
+            } else if((gcodeArray[item].search("X") > -1) && (gcodeArray[item].search("Y") > -1)){ // Both X and Y positions present - travel or print move
+                if(gcodeArray[item].search("E") > -1){ // Search for E = extrusion move
+                    startedExtrusion = true; // Mark that actual printing has started
+                    oldX = parseFloat(gcodeArray[item].match(regexpX)[0].substring(1)); // Store current X position
+                    oldY = parseFloat(gcodeArray[item].match(regexpY)[0].substring(1)); // Store current Y position
+                } else { // No extrusion - travel move
+                    if(startedExtrusion){ // Only progress if printing has actually started
+                        gType = gcodeArray[item].substring(0,2); // Capture either 'G0' or 'G1' to reuse
+                        nextX = parseFloat(gcodeArray[item].match(regexpX)[0].substring(1)); // Store X coordinate for end of travel move
+                        nextY = parseFloat(gcodeArray[item].match(regexpY)[0].substring(1)); // Store Y coordinate for end of travel move
+                        travelLength = parseFloat(Math.sqrt(Math.pow(nextX-oldX, 2) + Math.pow(nextY-oldY, 2))); // Calculate length of travel move using Pythagoras' theorem
+                        if(travelLength > minLength){ // Check if travel meets length requirement, create diagonal Z hop if it does
+                            if(gcodeArray[item].search("F") > -1){ // Store feedrate for travel move if it is present
+                                oldF = parseFloat(gcodeArray[item].match(regexpF)[0].substring(1)).toFixed(4);
+                            } else {
+                                oldF = -1; // If no F parameter, mark as -1
+                            }
+                            if(version == "trad"){
+                                halfX = (oldX + nextX) / 2; // Calculate half way point for X travel
+                                halfY = (oldY + nextY) / 2; // Calculate half way point for Y travel
+                            }                            
+                            oldX = parseFloat(gcodeArray[item].match(regexpX)[0].substring(1)); // Store X position in case of multiple travel moves in a row
+                            oldY = parseFloat(gcodeArray[item].match(regexpY)[0].substring(1));  // Store Y position in case of multiple travel moves in a row
+                            halfZ = parseFloat(oldZ + hop).toFixed(4); // Calculate temporary z height for peak of diagonal travel
+                            if(version == "trad"){ // Create movements for a diagonal Z hop halfway between points
+                                var newLine = gType+" X"+parseFloat(halfX).toFixed(4)+" Y"+parseFloat(halfY).toFixed(4)+" Z"+halfZ; // Create new G0/G1 travel move to the halfway point
+                                if(oldF != -1){ // Check if a feedrate was stored or bogus -1 value
+                                    newLine += " F"+oldF; // Add F feedrate to the line if possible
+                                }                        
+                                newLine += " ; Diagonal Z hop part 1\n"; // Add comment
+                                gcodeArray[item] = newLine+gcodeArray[item]+" Z"+oldZ+" ; Diagonal Z hop part 2"; // Add new travel move plus old travel together, adding Z height to the end of the old travel move.
+                            } else { // Create movements for a diagonal Z hop above the destination, then lower down
+                                gcodeArray[item] += " Z"+halfZ+" ; Diagonal Z hop part 1\n";
+                                gcodeArray[item] += gType+" Z"+oldZ+" ; Diagonal Z hop part 2";
+                            }
+                        } else { // If the travel length was too short, add comment only
+                            gcodeArray[item] += " ; Travel move of "+travelLength+" below user threshold of "+minLength+" mm";
+                        }
+                        
+                    }
+                } 
+            }
+        }
+    });
+    gcode = gcodeArray.join("\n"); // Join all of the individuallines back together
+    var header = "; Experimental diagonal Z hop post processor from: https://teachingtechyt.github.io/diagonalZhop.html\n"; // Add URL
+    header += "; Diagonal Z hop height: "+hop+" mm\n"; // Add user input
+    header += "; Miniumum travel length: "+minLength+" mm\n" // Add user input
+    header += "; Version: "; // Add user input
+    if(version == "trad"){
+        header += "Traditional (diagonal move up to half way point)\n";
+    } else {
+        header += "Alternate (diagonal move to above finishing point)\n";
+    }
+    gcode = header+gcode; // Append string to the start of the start of the gcode
+    document.diagZhop.diagZhopGcode.value = gcode; // Insert post processed gcode into the output box
 }
 
 function outputSettings(formName) {

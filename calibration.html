@@ -17,11 +17,11 @@
         <li><a href="#flow">Slicer Flow Calibration</a></li>
         <li><a href="#steppers">Stepper Motor Driver Current</a></li>
         <li><a href="#temp">Temperature Tuning</a></li>
-        <li><a href="#retraction">Retraction Tuning</a></li>        
+        <li><a href="#retraction">Retraction Tuning</a></li>
+        <li><a href="#speed">Speed & Max Flow Tuning</a></li>        
         <li><a href="#accel">Acceleration Tuning</a></li>
         <li><a href="#linadv">Linear Advance</a></li>
         <li><a href="#xyzsteps">XYZ steps Calibration</a></li>
-        <li><a href="#speed">Speed Tuning</a></li>
     </ul>
 
     <div id="intro">
@@ -404,6 +404,7 @@ M84 ; disable motors
             <p>By default, Marlin expects the e-steps for each of your extruders to be the same. To work around this, you must compile with <b>DISTINCT_E_FACTORS</b> uncommented/enabled in <b>configuration.h</b>:</p>
             <img style="margin-left:50px;" src="img/distinct-e-factors.jpg" />
             <p>You will then be able to enter a unique <b>M92</b> value for each extruder.</p>
+            <p>If recompiling the firmware is not an option. The <i>M92</i> command for each extruder can be inserted into the slicer 'tool change' section. This way the correct e-steps will be set just before extrusion for that tool takes place.</p>
         </div>
     </div>
 
@@ -848,73 +849,85 @@ M84 ; disable motors
             <p>Lower acceleration and jerk will result in a slower print time, as the printer reaches top speed more gradually and corners at a lower velocity. This is easier on the printer, with potentially increased component lifespan and less need for regular maintenance. It reduces surface artefacts such as ringing/ghosting, unless it is far too conservative, in which case it may introduce bulging in corners.</p>
         </div>
         <h2>Calculating maximum feedrate - optional but strongly recommended</h2>
-        <p>One strategy is to calculate the fastest your 3D printer can move while extruding cleanly, set this feedrate in the slicer, and then tune acceleration to meet this speed. If you are not interested in printing as fast as possible, skip to the next section.</p>
-        <p><i>This part of the guide and calculator is adapted from <a href="https://grabcad.com/tutorials/dialing-in-a-filament-and-specifying-the-max-volumetric-e-xtrusion-value" target="_blank">Martin Pirringer's tutorial</a>. Please consider supporting him and his robotics team through <a href="paypal.me/DudeWithaPulse" target="_blank">paypal</a> or you can also donate to team 1989 through their <a href="https://www.vernonrobotics.com" target="_blank">Team 1989 Web Site</a></i></p>
-        <p>The following calculator will assist you in determining the maximum feedrate your printer/extruder/hot end is capable of.</p>
-        
-        <ol>
-            <li>Clear debris from hobbed gear, bring nozzle up to normal printing temp and load filament.</li>
-            <li>Enter the following into pronterface. This will set movement to relative and then extrude 50mm of filament at a feedrate of 2mm/sec:</li>
-            <pre>G91</pre>
-            <pre>G1 E50 F120</pre>
-            <li>Inspect extruded filament for consistency. If all is well, keep repeating with higher feedrate F, until extrusion is inconsistent, extruder stepper skips steps and/or hobbed gear starts eating into filament.<br />
-            The following are examples of increasing the extruder feed rate by 1mm/sec each time, although you should stop when the extrusion becomes problematic. You may have more or less steps than this:</li>
-            <pre>G1 E50 F180</pre>
-            <pre>G1 E50 F240</pre>
-            <pre>G1 E50 F300</pre>
-            <pre>G1 E50 F360</pre>
-            <pre>...</pre>
-            <li>After you find the limiting speed, back off and repeat the test at a lower feedrate several times in a row until you are confident of reliable and repeatable extrusion. <br />Don't forget to put the printer back into absolute movement mode:</li>
-            <pre>G90</pre>
-            <li>Enter your reliable feedrate and filament diameter below:</li>
-            <h6 id="mfc">Maximum feedrate calculator</h6>
-            <form id="maxExtrusion1" name="maxExtrusion1">
-            <label>Reliable feedrate: <input type="number" min="60" max="1000" name="maxFeed" value="180" step="10" onchange="maxExt(); maxFee();"></label>
-            <label>Filament diameter: <input type="number" min="1.5" max="4" name="filDia" value="1.75" step="0.05" onchange="maxExt(); maxFee();"></label>
-            <p class="result">Your maximum reliable extrusion rate is <b><span id="maxExt">7.22</span> mm³</b> per second.</p>
-            </form>
-            <li>Enter the following settings from your slicer:</li>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Input setting:</th>
-                        <th><script>document.write(slicerSelector);</script></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <form id="maxExtrusion2" name="maxExtrusion2">
-                        <td><label>Layer height (mm): <input type="number" name="layerH" min="0.05" max="1" value="0.2" step="0.05" onchange="maxFee();"></label></td>
-                        <td class="curaContent">Quality > Layer height</td>
-                        <td class="s3dContent">Layer > Primary layer height</td>
-                        <td class="prusaslicerContent">Print settings > Layers and perimeters > Layer height > Layer height</td>
-                        <td class="superslicerContent">Print settings > Slicing > Layer height > Base Layer height</td>
-                        <td class="ideamakerContent">Template > Layer > General > Layer height</td>
-                    </tr>
-                    <tr>
-                        <td><label>Extrusion width (mm): <input type="number" name="layerW" min="0.1" max="1" value="0.4" step="0.01" onchange="maxFee();"></label></td>
-                        <td class="curaContent">Quality > Line width</td>
-                        <td class="s3dContent">Extruder > Extrusion width</td>
-                        <td class="prusaslicerContent">Print settings > Advanced > Extrusion width > Default extrusion width</td>
-                        <td class="superslicerContent">Print settings > Width & Flow > Extrusion width > default</td>
-                        <td class="ideamakerContent">Template > Extruder > General > Extrusion width</td>
-                    </form>
-                    </tr>
-                </tbody>
-            </table>
-            <p class="result">Your maximum reliable XY feedrate is <b><span id="maxFee">90</span> mm</b> per second.</p>
-            <p class="warning">Warning: This value is dependent on a number of variables such as filament type, brand, colour, ambient temperature, etc. Be conservative to ensure success.</p>						
-        </ol>        
+        <p>This is simplified test that will not be as accurate as using the gcode generator on the <a href="calibration.html#speed" target="_blank">Speed/Max flow tab</a>. If you would like to see it, you can toggle visibility <span style="cursor:pointer;" onclick="$('#oldFlowTest').toggle();"><b>here</b></span>.</p>
+        <div id="oldFlowTest" style="display:none;">
+            <p>One strategy is to calculate the fastest your 3D printer can move while extruding cleanly, set this feedrate in the slicer, and then tune acceleration to meet this speed. If you are not interested in printing as fast as possible, skip to the next section.</p>
+            <p><i>This part of the guide and calculator is adapted from <a href="https://grabcad.com/tutorials/dialing-in-a-filament-and-specifying-the-max-volumetric-e-xtrusion-value" target="_blank">Martin Pirringer's tutorial</a>. Please consider supporting him and his robotics team through <a href="paypal.me/DudeWithaPulse" target="_blank">paypal</a> or you can also donate to team 1989 through their <a href="https://www.vernonrobotics.com" target="_blank">Team 1989 Web Site</a></i></p>
+            <p>The following calculator will assist you in determining the maximum feedrate your printer/extruder/hot end is capable of.</p>         
+            <ol>
+                <li>Clear debris from hobbed gear, bring nozzle up to normal printing temp and load filament.</li>
+                <li>Enter the following into pronterface. This will set movement to relative and then extrude 50mm of filament at a feedrate of 2mm/sec:</li>
+                <pre>G91</pre>
+                <pre>G1 E50 F120</pre>
+                <li>Inspect extruded filament for consistency. If all is well, keep repeating with higher feedrate F, until extrusion is inconsistent, extruder stepper skips steps and/or hobbed gear starts eating into filament.<br />
+                The following are examples of increasing the extruder feed rate by 1mm/sec each time, although you should stop when the extrusion becomes problematic. You may have more or less steps than this:</li>
+                <pre>G1 E50 F180</pre>
+                <pre>G1 E50 F240</pre>
+                <pre>G1 E50 F300</pre>
+                <pre>G1 E50 F360</pre>
+                <pre>...</pre>
+                <li>After you find the limiting speed, back off and repeat the test at a lower feedrate several times in a row until you are confident of reliable and repeatable extrusion. <br />Don't forget to put the printer back into absolute movement mode:</li>
+                <pre>G90</pre>
+                <li>Enter your reliable feedrate and filament diameter below:</li>
+                <h6 id="mfc">Maximum feedrate calculator</h6>
+                <form id="maxExtrusion1" name="maxExtrusion1">
+                <label>Reliable feedrate: <input type="number" min="60" max="1000" name="maxFeed" value="180" step="10" onchange="maxExt(); maxFee();"></label>
+                <label>Filament diameter: <input type="number" min="1.5" max="4" name="filDia" value="1.75" step="0.05" onchange="maxExt(); maxFee();"></label>
+                <p class="result">Your maximum reliable extrusion rate is <b><span id="maxExt">7.22</span> mm³</b> per second.</p>
+                </form>
+                <li>Enter the following settings from your slicer:</li>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Input setting:</th>
+                            <th><script>document.write(slicerSelector);</script></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <form id="maxExtrusion2" name="maxExtrusion2">
+                            <td><label>Layer height (mm): <input type="number" name="layerH" min="0.05" max="1" value="0.2" step="0.05" onchange="maxFee();"></label></td>
+                            <td class="curaContent">Quality > Layer height</td>
+                            <td class="s3dContent">Layer > Primary layer height</td>
+                            <td class="prusaslicerContent">Print settings > Layers and perimeters > Layer height > Layer height</td>
+                            <td class="superslicerContent">Print settings > Slicing > Layer height > Base Layer height</td>
+                            <td class="ideamakerContent">Template > Layer > General > Layer height</td>
+                        </tr>
+                        <tr>
+                            <td><label>Extrusion width (mm): <input type="number" name="layerW" min="0.1" max="1" value="0.4" step="0.01" onchange="maxFee();"></label></td>
+                            <td class="curaContent">Quality > Line width</td>
+                            <td class="s3dContent">Extruder > Extrusion width</td>
+                            <td class="prusaslicerContent">Print settings > Advanced > Extrusion width > Default extrusion width</td>
+                            <td class="superslicerContent">Print settings > Width & Flow > Extrusion width > default</td>
+                            <td class="ideamakerContent">Template > Extruder > General > Extrusion width</td>
+                        </form>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="result">Your maximum reliable XY feedrate is <b><span id="maxFee">90</span> mm</b> per second.</p>
+                <p class="warning">Warning: This value is dependent on a number of variables such as filament type, brand, colour, ambient temperature, etc. Be conservative to ensure success.</p>						
+            </ol>
+        </div>        
         <h2>Acceleration Tuning</h2>
         <p>We will now produce an acceleration tower to conveniently test back to back settings in a single print. If you would like to slice the model yourself, here is the STL: <a href="files/accelerationtower.stl">accelerationtower.stl</a>. It should be sliced with a normal base, but hollow, no top layers and only 2 perimeters.</p>
-        <p>The only thing you need to know before this test is whether your firmware is set up for jerk (older) or junction deviation (newer). Entering <b>M503</b> via terminal will give a list of printer variables:</p>
-        <ul>
-            <li>If the <b>M205</b> line contains the letters <b>X, Y & Z</b>, your printer is running jerk. The numbers after the X,Y & Z are your current jerk values for each axis.</li>
-            <li>If the <b>M205</b> contains the letter <b>J</b>, your printer is running junction deviation. The number after the J is your current junction deviation value.</li>
-        </ul>
-        <p>The image below shows an example of each of these scenarios:</p>
-        <a href="#" data-featherlight="img/m205.jpg"><img loading="lazy" class="thumb" src="img/m205.jpg" /></a>
-        <p>Use the following form to customise the gcode to your liking:</p>
+        <script>document.write(firmwareSelector);</script>
+        <div class="marlinContent">
+            <p>With Marlin firmware, the only thing you need to know before this test is whether your firmware is set up for jerk (older) or junction deviation (newer). Entering <b>M503</b> via terminal will give a list of printer variables:</p>
+            <ul>
+                <li>If the <b>M205</b> line contains the letters <b>X, Y & Z</b>, your printer is running jerk. The numbers after the X,Y & Z are your current jerk values for each axis.</li>
+                <li>If the <b>M205</b> contains the letter <b>J</b>, your printer is running junction deviation. The number after the J is your current junction deviation value.</li>
+            </ul>
+            <p>The image below shows an example of each of these scenarios:</p>
+            <a href="#" data-featherlight="img/m205.jpg"><img loading="lazy" class="thumb" src="img/m205.jpg" /></a>
+            <p>Use the following form to customise the gcode to your liking:</p>
+        </div>
+        <div class="klipperContent">
+            <p>Klipper uses both <b>ACCEL</b> and <b>ACCEL_TO_DECEL</b>. The difference between the is explained <a href="https://www.klipper3d.org/Config_Reference.html#printer" target="_blank">here</a>.</p>
+            <p>Klipper uses a value known as Square Corner Velocity (SCV) instead of junction deviation or jerk, but the idea behind it is the same. A value of 5 mm/sec will allow the toolhead to slow to and maintain a 5 mm/sec speed for a 90 degree corner. This speed will be higher for a shallower turn and lower for a sharper turn.</p>
+        </div>
+        <div class="rrfContent">
+            <p>RepRapFirmware uses <a href="https://duet3d.dozuki.com/Wiki/M205" target="_blank">M205</a> to set Max Instantaneous Speed Change instead of jerk or junction deviation, but the idea behind it is the same.</p>
+        </div>
         <h6 id="acc">Acceleration & jerk/junction deviation tuning tower generator</h6>
         <p>The STL for this test is available here: <a href="files/accelerationtower.stl">accelerationtower.stl</a></p>
         <!-- accelerationForm -->
@@ -935,29 +948,56 @@ M84 ; disable motors
         <p>The ideal segment will have the best compromise between low acceleration corner bulging and high acceleration ringing.</p>
         <p>My previous value was 500, but a small increase in quality may be achieved from lowering the value to 400.</p>
         <a href="#" data-featherlight="img/accelerationresults.jpg"><img loading="lazy" class="thumb" src="img/accelerationresults.jpg" /></a>
-        <p></p>
-        <p>Once you have a value you are happy with, you can update with:</p>
-        <pre>M204 P400</pre>
-        <p>where <b>400</b> is the value of the acceleration with the best compromise based on the tower test print.</p>
-        <p>It's also worth noting that the <b>M201 value acts as a per axis limit for acceleration</b>. For example, if you set the <b>M204</b> print acceleration to 1000 but the X and Y <b>M201</b> acceleration limits are only 800, then the <b>M204 P</b> value will be capped at 800. Use <b>M503</b> to see the current <b>M201</b> values, and if necessary, use <b>M201</b> to set higher X and Y acceleration limit values to suit.</p>
-        <p>We can store the new value(s) to EEPROM by sending:</p>
-        <pre>M500</pre>
-        <p>You would then repeat the test with all of the acceleration values locked at your preferred value for each segment, but this time varying jerk/junction deviation.</p>
-        <p>To save for a printer with jerk (with a determined best compromise of <b>8</b> for this example), we would enter:</p>
-        <pre>M205 X8 Y8</pre>
-        <p>To save for a printer with junction deviation (with a determined best compromise of <b>0.05</b> for this example), we would enter:</p>
-        <pre>M205 J0.05</pre>
-        <p>Either way, we save to EEPROM afterwards with:</p>
-        <pre>M500</pre>
-        <p>Each of these parameters can also be entered and stored from the <b>configuration</b> menu of the Marlin LCD.</p>
+        <script>document.write(firmwareSelector);</script>
+        <div class="marlinContent">
+            <p>Once you have an acceleration value you are happy with, you can update with:</p>
+            <pre>M204 P400</pre>
+            <p>where <b>400</b> is the value of the acceleration with the best compromise based on the tower test print.</p>
+            <p>It's also worth noting that the <b>M201 value acts as a per axis limit for acceleration</b>. For example, if you set the <b>M204</b> print acceleration to 1000 but the X and Y <b>M201</b> acceleration limits are only 800, then the <b>M204 P</b> value will be capped at 800. Use <b>M503</b> to see the current <b>M201</b> values, and if necessary, use <b>M201</b> to set higher X and Y acceleration limit values to suit.</p>
+            <p>We can store the new value(s) to EEPROM by sending:</p>
+            <pre>M500</pre>
+            <p>You would then repeat the test with all of the acceleration values locked at your preferred value for each segment, but this time varying jerk/junction deviation.</p>
+            <p>To save for a printer with jerk (with a determined best compromise of <b>8</b> for this example), we would enter:</p>
+            <pre>M205 X8 Y8</pre>
+            <p>To save for a printer with junction deviation (with a determined best compromise of <b>0.05</b> for this example), we would enter:</p>
+            <pre>M205 J0.05</pre>
+            <p>Either way, we save to EEPROM afterwards with:</p>
+            <pre>M500</pre>
+            <p>Each of these parameters can also be entered and stored from the <b>configuration</b> menu of the Marlin LCD.</p>
+        </div>
+        <div class="klipperContent">
+            <p>Once you have an acceleration value you are happy with, you can edit the <a href="https://www.klipper3d.org/Config_Reference.html#printer" target="_blank">[printer]</a> section of <b>printer.cfg</b></p>
+            <pre>[printer]
+max_accel: 400
+max_accel_to_decel: 400</pre>
+            <p>where <b>400</b> is the value of the acceleration with the best compromise based on the tower test print.</p>
+            <p>Obviously you can enter a unique value for <b>MAX_ACCEL_TO_DECEL</b> compared to <b>MAX_ACCEL</b>.</p>
+            <p>You would then repeat the test with all of the acceleration values locked at your preferred value for each segment, but this time varying square corner velocity.</p>
+            <p>To save an example value of <b>8</b> you can edit the <a href="https://www.klipper3d.org/Config_Reference.html#printer" target="_blank">[printer]</a> section of <b>printer.cfg</b></p>
+            <pre>[printer]
+square_corner_velocity: 8.0</pre>
+            <p>Save config to restart Klipper with the changes in effect.</p>
+        </div>
+        <div class="rrfContent">
+            <p>Once you have an acceleration value you are happy with, you can edit <b>config.g</b> with:</p>
+            <pre>M204 P400 T[value]</pre>
+            <p>where <b>400</b> is the value of the acceleration with the best compromise based on the tower test print. The T value represents travel acceleration, when no filament is being extruded. It can likely be a higher valu without any loss in quality.</p>
+            <p>It's also worth noting that the <b>M201 value acts as a per axis limit for acceleration</b>. For example, if you set the <b>M204</b> print acceleration to 1000 but the X and Y <b>M201</b> acceleration limits are only 800, then the <b>M204 P</b> value will be capped at 800. Look the current <b>M201</b> values, and if necessary, use <b>M201</b> to set higher X and Y acceleration limit values to suit.</p>
+            <p>You would then repeat the test with all of the acceleration values locked at your preferred value for each segment, but this time varying max instananeous speed change.</p>
+            <p><b>config.g</b>> can then be updated to reflect the best results, for instance a value of <b>8</b>:</p>
+            <pre>M205 X8 Y8 Z[value] E[value]</pre>
+            <p>Note you would likely leave <b>Z</b> and <b>E</b> unchanged from their original values.</p>
+            <p>Save <b>config.g</b> to restart the firmware with the changes in effect.</p>>
+        </div>
         <div class="exp">
             <h5>Special note for Cura, PrusaSlicer and SuperSlicer:</h5>
             <p>Cura, PrusaSlicer and SuperSlicer all have the capability to control these parameters from the slicer by inserting appropriate gcode. If you are finding that your new acceleration values are not taking effect, you may need to also set them in the slicer. This is actually a desirable feature, as it allows more aggressive settings for infill and features that can't be seen in the final print, yet be more conservative for outer walls where aesthetics are paramount.</p>
             <a href="#" data-featherlight="img/acceloverride.jpg"><img loading="lazy" class="thumb" src="img/acceloverride.jpg" /></a>
         </div>
         <h2>Higher acceleration without ringing: Input Shaping</h2>
-        <p>An amazing development in 3D printing is input shaping, which compensates for the machine's resonant frequency by altering stepper motor inputs to drastically reduce ringing. Available in Klipper and soon to be introduced to RepRapFirmware, input shaping allows much higher feedrates without a loss in print quality. To see it in action, see the video below:</p>
+        <p>An amazing development in 3D printing is input shaping, which compensates for the machine's resonant frequency by altering stepper motor inputs to drastically reduce ringing. Available in Klipper and RepRapFirmware, input shaping allows much higher feedrates without a loss in print quality. To see it in action, see the videos below:</p>
         <iframe loading="lazy" width="480" height="360" src="https://www.youtube.com/embed/er7q-CJL1lc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe loading="lazy" width="480" height="360" src="https://www.youtube.com/embed/EJapxNsntsQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
 
     <div id="linadv">
@@ -1116,11 +1156,11 @@ M84 ; disable motors
     
     <div id="speed">
         <div class="exp">
-            <h2>Speed/Feedrate Tuning</h2>
+            <h2>Speed & Max Flow Tuning</h2>
             <h5>Aim:</h5>
             <p>To find the maximum feedrate suitable for the outer walls, in terms of surface artefacts, flow rate and reliable extrusion.</p>
             <h5>When required:</h5>
-            <p>This is an optional step, and only applies to specific scenarios. Examples include finding a safe feedrate for a difficult to extrude flexible filament, and tuning outer wall speed to reduce 'noise' on external surfaces.</p>
+            <p>This is an optional step, and only applies to specific scenarios. Examples include finding a safe feedrate for a difficult to extrude flexible filament, determing the maximum reliable feedrate when trying to print faster, and tuning outer wall speed to reduce 'noise' on external surfaces.</p>
             <h5>Tools:</h5>
             <p>Terminal software such as <a href="https://www.pronterface.com/" target="_blank">Pronterface</a> or <a href="https://octoprint.org/" target="_blank">Octoprint</a>.</p>
             <p>Gcode generator on this page.</p>
@@ -1133,8 +1173,8 @@ M84 ; disable motors
         <p>Some printers may have a combination of hardware and software that produces noise or surface artefacts with feedate as a factor. This is the case for the image submitted by midicdj1000, where a chnge in feedrate for the outer walls alters the pattern on this surface:</p>
         <a href="#" data-featherlight="img/speedartefacts.jpg"><img loading="lazy" class="thumb" src="img/speedartefacts.jpg" /></a>
         <p>The test on this page is therefore useful for finding an ideal feedrate for outer wall surface quality.</p>
-        <h2>Feedrate limitations from the extruder drive</h2>
-        <p>The tools on the <a href="calibration.html#accel" target="_blank">Acceleration Tuning</a> tab will allow you to calculate the maximum feedrate your 3D printer can move at and still maintain reliable extrusion. This relates to how quickly filament can be melted as it travels through the hot end. Once the filament cannot be melted sufficiently, it won't flow properly through the system and under extrusion or jams will occur.</p>
+        <h2>Feedrate limitations from the extruder drive and hot end</h2>
+        <p>The tools on this tab will also allow you to calculate the maximum feedrate your 3D printer can move at and still maintain reliable extrusion. This relates to how quickly filament can be melted as it travels through the hot end. Once the filament cannot be melted sufficiently, it won't flow properly through the system and under extrusion or jams will occur.</p>
         <p>Sometimes the ability of the heater is not the limiting factor, and instead the amount of grip and push from the extruder drive. Consider a flexible filament such as TPU. TPU doesn't need a particularly high temperature hot end to melt it properly, but many extruder drives struggle to grip and push the filament towards the hot end without it buckling and jamming. The test on this page can be used in these situations to find how fast you can print before the system breaks down.</p>
         <h2>Feedrate variations and modifiers in your slicer profile</h2>
         <p>It is important to understand how feedrate is handled by the slicer software. Slicers generally have a default/base feedrate that most speed calculations are based on. Features such as perimeters, external perimeters and solid infill are reduced in speed to aid visual print quality. Features such as internal infill are sped up because they will never be seen. The image below shows examples interfaces for this in several slicers:</p>
@@ -1149,8 +1189,9 @@ M84 ; disable motors
             <li>Because of the above reasons, vase mode makes it ideal to use the <b>M220</b> feedrate modifier gcode to alter the feedrate for each segment of the test. This is supported in <a href="https://marlinfw.org/docs/gcode/M220.html" target="_blank">Marlin</a>, <a href="https://www.klipper3d.org/G-Codes.html" target="_blank">Klipper</a> and <a href="https://duet3d.dozuki.com/Wiki/M220" target="_blank">RepRapFirmware</a>. Changing your feedrate mid print from the printer's LCD controls or web inteface uses this feature of the firmware. This test will insert <b>M220</b> commands into the gcode for speed changes on the fly.</li>
         </ul>
         <p>M220 can be a double edge sword because it also affects the speed of retraction movements. If you are performing something like a retraction test, M220 is not suitable. In this case, however, due to the use of vase mode, M220 is a simple way for us to start with a slower feedrate and easily increase it throughout the print at set height intervals.</p>
-        <h2>Maximum feedrate limits in firmware</h2>
-        <p>Every firmware has a safety feature to limit the feedrate to a user set maximum. This prevents a typo in the slicer or terminal command from producing a move so fast it damages the printer. Use the following instructions to check what feedrate limit is in place for your firmware and temporarily raise it if necessary.</p>
+        <h2>Maximum feedrate and acceleration limits in firmware</h2>
+        <p>Every firmware has a safety feature to limit the feedrate and acceleration to user set maximums. This prevents a typo in the slicer or terminal command from producing a move so fast it damages the printer. Use the following instructions to check what feedrate/acceleration limits are in place for your firmware and temporarily raise them if necessary.</p>
+        <p>Please note that for this test, you would typically only alter feedrate limits. Acceleration limits are also covered here for completeness.</p>
         <script>document.write(firmwareSelector);</script>
         <div class="marlinContent">
             <h4>Marlin</h4>
@@ -1159,7 +1200,10 @@ M84 ; disable motors
             <p>If you wish to raise these limits, re-enter <b>203</b> and use the <b>X</b> and <b>Y</b> arguments to set the max feedrate, typically in mm/sec. eg:</p>
             <pre>M203 X500 Y500</pre>
             <p>where 500 is a feedrate of 500 mm/sec.</p>
-            <p>If you wish this change to be permanent, save to EEPROM with <a href="https://marlinfw.org/docs/gcode/M500.html" target="_blank">M500</a>.</p>
+            <p>Marlin limits the acceleration with the <a href="https://marlinfw.org/docs/gcode/M201.html" target="_blank">M201</a> and <a href="https://marlinfw.org/docs/gcode/M204.html" target="_blank">M204</a> gcodes.</p>
+            <p>You can enter <b>M503</b> into a terminal and these values will be reported.</p>
+            <p><b>M204</b> sets target acceleration for print, retraction and travel moves, however <b>M201</b> values impose limits per axis. For example, if you set the <b>M204</b> print acceleration to 1000 but the <b>M201 Y</b> acceleration limit is only 800, then the <b>M204 P</b> value will be capped at 800 for Y while printing. If you have a bed slinger with a heavy y axis, M201 can be used in this way to combat ringing.</p>
+            <p>If you wish this changes to be permanent, save to EEPROM with <a href="https://marlinfw.org/docs/gcode/M500.html" target="_blank">M500</a>.</p>
         </div>
         <div class="klipperContent">
             <h4>Klipper</h4>
@@ -1167,6 +1211,12 @@ M84 ; disable motors
             <p>You can change this value and restart Klipper to raise it, or temporarily override it by entering:</p>
             <pre>SET_VELOCITY_LIMIT VELOCITY=500</pre>
             <p>in the terminal where <i>500</i> is a max feedrate of 500 mm/sec.</p>
+            <p>Klipper limits acceleration in  <b>printer.cfg</b>with <a href="https://www.klipper3d.org/Config_Reference.html#printer" target="_blank">MAX_ACCEL and MAX_ACCEL_TO_DECEL</a>.</p>
+            <p>You can change these values and restart Klipper to raise them, or temporarily override by entering:</p>
+            <pre>SET_VELOCITY_LIMIT ACCEL=600</pre>
+            <p>or</p>
+            <pre>SET_VELOCITY_LIMIT ACCEL_TO_DECEL=600</pre>
+            <p>in the terminal where <i>600</i> is a max acceleration/accel to decel of 600 mm/sec/sec.</p>
         </div>
         <div class="rrfContent">
             <h4>RepRapFirmware</h4>
@@ -1176,8 +1226,12 @@ M84 ; disable motors
             <pre>M201 X3000 Y3000</pre>
             <p>Remember that RRF uses mm/min instead of mm/sec, so this example uses a value of 500 mm/sec. Convert from mm/sec to mm/min by multiplying by 60. When editing <b>config.g</b>, do not omit the arguments for <b>Z</b> and <b>E</b>. Only <b>X</b> and <b>Y</b> potentially need modifiying for this test so leave the values for <b>Z</b> and <b>E</b> untouched.</p>
             <p>Later versions of RRF also use the <b>I</b> argument to set the minimum overall feedrate. It may be necessary to lower this value if you want a particularly slow feedrate for segments of the tuning tower.</p>
+            <p>RRF limits acceleration with the <a href="https://duet3d.dozuki.com/Wiki/M201" target="_blank">M201</a> and <a href="https://duet3d.dozuki.com/Wiki/M204" target="_blank">M204</a> gcodes.</p>
+            <p>You can see your current value in <b>config.g</b> under <b>M201</b> and <b>M204</b>.</p>
+            <p><b>M204</b> sets target acceleration for print, and travel moves, however <b>M201</b> values impose limits per axis. For example, if you set the <b>M204</b> print acceleration to 1000 but the <b>M201 Y</b> acceleration limit is only 800, then the <b>M204 P</b> value will be capped at 800 for Y while printing. If you have a bed slinger with a heavy y axis, M201 can be used in this way to combat ringing.</p>
+            <p>For acceleration, RRF uses mm/sec, despite using mm/min for feedrate. When editing <b>config.g</b> for <b>M201</b>, be sure to include values for each axis (typically <B>X</B>, <b>Y</b>, <b>Z</b> and <b>E</b>). When editing <b>config.g</b> for <b>M204</b>, be sure to include values for both <b>P</b> and <b>T</b>.</p>
         </div>
-        <h6 id="spd">Speed/feedrate tuning tower generator</h6>
+        <h6 id="spd">Speed/feedrate/Max flow tuning tower generator</h6>
         <p>The STL for this test is available here: <a href="files/speedtower.stl">speedtower.stl</a></p>
         <!-- speedForm -->
         <form name="speedForm" id="speedForm" onsubmit="return false;">
@@ -1191,6 +1245,42 @@ M84 ; disable motors
         <p>Please use the following video as a guide to this test:</p>
         <iframe loading="lazy" width="640" height="480" src="https://www.youtube.com/embed/CZC5n2J8k_c" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         <p>You may wish to stop the print early if it is clear extrusion has ceased or become unreliable. This may prevent the need for disassembly of the extruder to clear the blockage.</p>
+        <p>Some slicers support using the calculated volumetric flow rate above as a hard limit. For those that don't, you can use the following calculator to reverse engineer a maximum feedrat for your preferred extrusion width and layer height:</p>
+        <p><table>
+            <thead>
+                <tr>
+                    <th>Input setting:</th>
+                    <th><script>document.write(slicerSelector);</script></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <form id="maxExtrusion3" name="maxExtrusion3">
+                    <td><label>Layer height (mm): <input type="number" name="layerH" min="0.05" max="2" value="0.2" step="0.05" onchange="reverseVol();"></label></td>
+                    <td class="curaContent">Quality > Layer height</td>
+                    <td class="s3dContent">Layer > Primary layer height</td>
+                    <td class="prusaslicerContent">Print settings > Layers and perimeters > Layer height > Layer height</td>
+                    <td class="superslicerContent">Print settings > Slicing > Layer height > Base Layer height</td>
+                    <td class="ideamakerContent">Template > Layer > General > Layer height</td>
+                </tr>
+                <tr>
+                    <td><label>Extrusion width (mm): <input type="number" name="layerW" min="0.1" max="2" value="0.4" step="0.01" onchange="reverseVol();"></label></td>
+                    <td class="curaContent">Quality > Line width</td>
+                    <td class="s3dContent">Extruder > Extrusion width</td>
+                    <td class="prusaslicerContent">Print settings > Advanced > Extrusion width > Default extrusion width</td>
+                    <td class="superslicerContent">Print settings > Width & Flow > Extrusion width > default</td>
+                    <td class="ideamakerContent">Template > Extruder > General > Extrusion width</td>
+                </tr>
+                <tr>
+                    <td><label>Volumetric flow (mm³/sec): <input type="number" name="maxVol" min="0.1" max="100" value="5" step="0.1" onchange="reverseVol();"></label></td>
+                    <td>Taken from the form above after testing when extrusion breaks down</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><p class="result">Your maximum reliable XY feedrate is <b><span id="maxFee2">52.08</span> mm</b> per second.</p></td>
+                </form>
+                </tr>
+            </tbody>
+        </table></p>
     </div>
 </div>
 <div id="up"></div>

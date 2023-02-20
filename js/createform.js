@@ -35,6 +35,8 @@ function displayCustom(){
         $('.klipperContent').hide();
         $('.rrfContent').show();
     }
+    // acc firmware selector
+    toggleAF();
     // slicer selector
     if($("#curaSelector").prop("checked") == true){
         $('.curaContent').show();
@@ -101,12 +103,11 @@ var slicerSelector = /*html*/ `<form name="slicerSelect" class="slicerSelector">
 </form>
 `;
 
-
 var nozzleLayer = /*html*/ `<h4>Nozzle Diameter / Layer Height</h4>
     <p>Select your nozzle diameter and layer height. If you have not changed your nozzle, it will likely be 0.4 mm. 0.2 mm is a typical layer height for this nozzle.</p>
     <p>25 options are available, however some of the tests don't work very well with the larger options.</p>
     <label for="nozzleLayer">Select nozzle diameter / layer height:</label>
-    <select name="nozzleLayer">
+    <select name="nozzleLayer" onchange="volumeCalc();">
         <option value="15_08">0.15 mm nozzle / 0.08 mm layer height</option>
         <option value="20_05">0.20 mm nozzle / 0.05 mm layer height</option>
         <option value="20_10">0.20 mm nozzle / 0.10 mm layer height</option>
@@ -326,6 +327,7 @@ var feedrateReg = /*html*/ `<h4>Feedrate</h4>
 var feedrateTower = /*html*/ `<h4>Feedrate/speed</h4>
 <p>The default printing speed is modified with 100% for perimeters, 166% for travel moves, and 50% of these for the first layer. For segment A, generated gcode will be modified using these proportions (<b>calculated feedrates shown in grey</b>). Please note extruder retraction/unretraction and Z-hop speeds will be unaffected by this.</p>
 <p>In this test the feedrate you enter is for the single, outer perimeter. Select a safe feedrate for segment A to ensure good adhesion with the bed. Increase feedrate for segments B to E to your liking. As this print is completed in vase mode, there are no retractions.</p>
+<p>This website uses an extrusion width of 1.2 x nozzle width. The volumetric flow value is calculated using this width, layer height and feedrate. This value can be used to get a practical idea of hot end volumetric flow at a given temperature.
 <p><span class="sug">Suggested increments for how much to vary the value for each segment are shown in green.</span></p>
 <table>
     <thead>
@@ -333,30 +335,36 @@ var feedrateTower = /*html*/ `<h4>Feedrate/speed</h4>
             <th>Reference diagram</th>
             <th>Segment</th>
             <th>Feedrate (mm/sec) <span class="sug">&#177; 5-20</span></th>
+            <th>Calculated volumetric flow (mm³/sec)</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td rowspan="5"><img src="img/speeddiagram.jpg" /></td>
             <td style="text-align: center;">E</td>
-            <td>Perimeter feedrate:  <input type="number" name="feedrateE" value="60" min="5" max="1000" step="1"></td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateE" onchange="volumeCalc()" value="60" min="5" max="1000" step="1"></td>
+            <td><span id="volE" class="volumetric">5.76</span> mm³/sec</td>
         </tr>
         <tr>
             <td style="text-align: center;">D</td>
-            <td>Perimeter feedrate:  <input type="number" name="feedrateD" value="50" min="5" max="1000" step="1"></td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateD" onchange="volumeCalc()" value="50" min="5" max="1000" step="1"></td>
+            <td><span id="volD" class="volumetric">4.80</span> mm³/sec</td>
         </tr>
         <tr>
             <td style="text-align: center;">C</td>
-            <td>Perimeter feedrate:  <input type="number" name="feedrateC" value="40" min="5" max="1000" step="1"></td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateC" onchange="volumeCalc()" value="40" min="5" max="1000" step="1"></td>
+            <td><span id="volC" class="volumetric">3.84</span> mm³/sec</td>
         </tr>
         <tr>
             <td style="text-align: center;">B</td>
-            <td>Perimeter feedrate:  <input type="number" name="feedrateB" value="30" min="5" max="1000" step="1"></td>
+            <td>Perimeter feedrate:  <input type="number" name="feedrateB" onchange="volumeCalc()" value="30" min="5" max="1000" step="1"></td>
+            <td><span id="volB" class="volumetric">2.40</span> mm³/sec</td>
         </tr>
         <tr>
             <td style="text-align: center;">A</td>
-            <td>Perimeter feedrate:  <input type="number" name="baseFeedrate" value="20" min="5" max="1000" step="1" onchange="updateFeedsTower(this.value);">
-            <p><span class="summary">Solid infill: <b><span class="solidFeedTower">48</span> mm/s</b></span><span class="summary">Travel moves: <b><span class="travelFeedTower">100</span> mm/s</b></span><span class="summary">First layer: <b><span class="firstFeedTower">30</span> mm/s</b></span></p><p>The above feedrate modifiers only apply to the first layer.</p></td>            
+            <td>Perimeter feedrate:  <input type="number" name="baseFeedrate" value="20" min="5" max="1000" step="1" onchange="updateFeedsTower(this.value); volumeCalc()">
+            <p><span class="summary">Solid infill: <b><span class="solidFeedTower">48</span> mm/s</b></span><span class="summary">Travel moves: <b><span class="travelFeedTower">100</span> mm/s</b></span><span class="summary">First layer: <b><span class="firstFeedTower">30</span> mm/s</b></span></p><p>The above feedrate modifiers only apply to the first layer.</p></td>
+            <td style="vertical-align:top"><span id="volA" class="volumetric">1.92</span> mm³/sec</td>            
         </tr>
     </tbody>
 </table>
@@ -365,21 +373,27 @@ var feedrateTower = /*html*/ `<h4>Feedrate/speed</h4>
 var feedrateWarning = /*html*/ `
 <p class="warning">Some users have experienced printing failures with gcode generated by this site when their regular slicer is able to create a successful print with the same STL. The gcode on this site does not use any slow down for short layers to aid cooling, whereas default profiles in some slicers do. This means that your regular slicer may be printing this file a fair bit slower than you realise. To match this on this site, simply lower the default feedrate in the form above.</p>`
 
-
 var accel = /*html*/ `<h4>Base feedrate/speed</h4>
 <p>You can specify the feedrate for X and Y movements. Both the inner and outer perimeter speed can be specified. It is recommend to follow the process above to calculate safe limits for feedrate.</p>
 <p><label>Inner perimeter feedrate (mm/sec): <input type="number" name="innerFeedrate" value="60" min="5" max="1000" step="1"></label></p>
 <p><label>Outer perimeter feedrate (mm/sec): <input type="number" name="outerFeedrate" value="60" min="5" max="1000" step="1"></label></p>
 <h4>Delta printer</h4>
-<p>Delta printers require X, Y and Z acceleration limits to be raised at the start of the test, whereas cartesian and coreXY only need X and Y limits raised. Tick the box if you are printing this test on a delta printer in order to set the correct behaviour.
+<p>Delta printers require X, Y and Z acceleration limits to be raised at the start of the test, whereas cartesian and coreXY only need X and Y limits raised. Tick the box if you are printing this test on a delta printer in order to set the correct behaviour.</p>
 <p><label>Delta printer: <input name="deltaAcc" type="checkbox" value="off"></label></p>
-<h4>Acceleration and jerk/junction deviation</h4>
-<p>After entering <b>M503</b>, I have determined my 3D printer firmware uses:</p>
-<label>Jerk: <input type="radio" value="jerk" name="jerk_or_jd" checked="checked" onchange="toggleJ()"></label>
-<label>Junction deviation: <input type="radio" value="jd" name="jerk_or_jd" onchange="toggleJ()"></label>
-<p>Based on the values you saw from <b>M503</b>, enter variables around this below.</p>
-<p>Junction deviation requires a single value, whereas jerk has separate values for X and Y. You can leave them the same or enter independent values.</p>
-<p>You should only change either acceleration or jerk/junction deviation for each test print, otherwise it will be impossible to know which parameter is responsible for any changes.</p>
+<h4>Firmware</h4>
+<p>I am running this test on a printer with:</p>
+    <label>Marlin: <input type="radio" value="accMarlin" name="accFirmware" checked="checked" onchange="toggleAF()"></label>
+    <label>Klipper: <input type="radio" value="accKlipper" name="accFirmware" onchange="toggleAF()"></label>
+    <label>RepRapFirmware: <input type="radio" value="accRRF" name="accFirmware" onchange="toggleAF()"></label>
+<div class="accMarlinContent">
+    <h4>Acceleration and jerk/junction deviation</h4>
+    <p>After entering <b>M503</b>, I have determined my 3D printer firmware uses:</p>
+    <label>Jerk: <input type="radio" value="jerk" name="jerk_or_jd" checked="checked" onchange="toggleJ()"></label>
+    <label>Junction deviation: <input type="radio" value="jd" name="jerk_or_jd" onchange="toggleJ()"></label>
+    <p>Based on the values you saw from <b>M503</b>, enter variables around this below.</p>
+    <p>Junction deviation requires a single value, whereas jerk has separate values for X and Y. You can leave them the same or enter independent values.</p>
+</div>
+<p>You should only change either acceleration or jerk/junction deviation/SCV/MISC for each test print, otherwise it will be impossible to know which parameter is responsible for any changes.</p>
 <p><span class="sug">Suggested increments for how much to vary the value for each segment are shown in green.</span></p>
 <table>
     <thead>
@@ -387,10 +401,14 @@ var accel = /*html*/ `<h4>Base feedrate/speed</h4>
             <th>Reference diagram</th>
             <th>Segment</th>
             <th>Acceleration (mm/sec/sec)<p class="sug">&#177; 100 (moving bed i3)</p><p class="sug">&#177; 500 (coreXY / delta)</p></th>
-            <th class="jerktd">Jerk X<p class="sug">&#177; 1</p></th>
-            <th class="jerktd">Jerk Y<p class="sug">&#177; 1</p></th>
-            <th class="jerktd">Jerk Z (delta only)<p class="sug">&#177; 1</p></th>
-            <th class="jdtd">Junction deviation<p class="sug">&#177; 0.01 - 0.05</p></th>
+                <th class="accMarlinContent jerktd">Jerk X<p class="sug">&#177; 1</p></th>
+                <th class="accMarlinContent jerktd">Jerk Y<p class="sug">&#177; 1</p></th>
+                <th class="accMarlinContent jerktd">Jerk Z (delta only)<p class="sug">&#177; 1</p></th>
+                <th class="accMarlinContent jdtd">Junction deviation<p class="sug">&#177; 0.01 - 0.05</p></th>
+                <th class="accKlipperContent">Squarer corner velocity (mm/sec)<p class="sug">&#177; 1</p></th>
+                <th class="accRrfContent">Maximum Instantaneous Speed change X (mm/sec)<p class="sug">&#177; 1</p></th>
+                <th class="accRrfContent">Maximum Instantaneous Speed change Y (mm/sec)<p class="sug">&#177; 1</p></th>
+                <th class="accRrfContent">Maximum Instantaneous Speed change Z (mm/sec) (delta only)<p class="sug">&#177; 1</p></th>
         </tr>
     </thead>
     <tbody>
@@ -398,50 +416,74 @@ var accel = /*html*/ `<h4>Base feedrate/speed</h4>
             <td rowspan="6" style="text-align: center;"><img src="img/accelerationdiagram.jpg" /></td>
             <td style="text-align: center;">F</td>
             <td><input type="number" name="accel_f1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_f2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_f3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_f5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_f4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_f2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_f3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_f5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_f4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_f6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_f7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_f8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_f9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
         <tr>
             <td style="text-align: center;">E</td>
             <td><input type="number" name="accel_e1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_e2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_e3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_e5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_e4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_e2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_e3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_e5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_e4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_e6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_e7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_e8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_e9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
         <tr>
             <td style="text-align: center;">D</td>
             <td><input type="number" name="accel_d1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_d2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_d3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_d5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_d4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_d2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_d3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_d5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_d4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_d6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_d7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_d8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_d9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
         <tr>
             <td style="text-align: center;">C</td>
             <td><input type="number" name="accel_c1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_c2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_c3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_c5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_c4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_c2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_c3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_c5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_c4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_c6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_c7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_c8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_c9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
         <tr>
             <td style="text-align: center;">B</td>
             <td><input type="number" name="accel_b1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_b2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_b3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_b5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_b4" value="0.050" min="0.01" max="20" step="0.001"></td>>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_b2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_b3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_b5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_b4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_b6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_b7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_b8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_b9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
         <tr>
             <td style="text-align: center;">A</td>
             <td><input type="number" name="accel_a1" value="500" min="10" max="50000" step="10"></td>
-            <td class="jerktd"><input type="number" name="accel_a2" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_a3" value="8" min="1" max="30" step="1"></td>
-            <td class="jerktd"><input type="number" name="accel_a5" value="8" min="1" max="30" step="1"></td>
-            <td class="jdtd"><input type="number" name="accel_a4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_a2" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_a3" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jerktd"><input type="number" name="accel_a5" value="8" min="1" max="30" step="1"></td>
+            <td class="accMarlinContent jdtd"><input type="number" name="accel_a4" value="0.050" min="0.01" max="20" step="0.001"></td>
+            <td class="accKlipperContent"><input type="number" name="accel_a6" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_a7" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_a8" value="5" min="0.1" max="50" step="0.1"></td>
+            <td class="accRrfContent"><input type="number" name="accel_a9" value="5" min="0.1" max="50" step="0.1"></td>
         </tr>
     </tbody>
 </table>`;
